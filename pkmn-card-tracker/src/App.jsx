@@ -7,6 +7,12 @@ const POKEAPI_URL = 'https://pokeapi.co/api/v2/pokemon?limit=1008'; // Gen 1-8
 const TCG_API_URL = 'https://api.pokemontcg.io/v2/cards';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
 
+// Create axios instance for backend calls with credentials
+const api = axios.create({
+  baseURL: BACKEND_URL,
+  withCredentials: true,
+});
+
 // Image cache hook
 function useImageCache(urls) {
   useEffect(() => {
@@ -116,7 +122,7 @@ function useAuth() {
 
   const fetchUser = useCallback(() => {
     setLoading(true);
-    axios.get(`${BACKEND_URL}/auth/user`, { withCredentials: true })
+    api.get('/auth/user')
       .then(res => {
         setUser(res.data.user);
         setLoading(false);
@@ -202,7 +208,7 @@ function App() {
       setCollection([]);
       return;
     }
-    axios.get(`${BACKEND_URL}/collection`, { withCredentials: true })
+    api.get('/collection')
       .then(res => setCollection(res.data))
       .catch(() => setCollection([]));
   }, [user]);
@@ -213,20 +219,20 @@ function App() {
 
   const addToCollection = (card) => {
     if (!user) return;
-    axios.post(`${BACKEND_URL}/collection`, card, { withCredentials: true })
+    api.post('/collection', card)
       .then(() => setCollection(prev => [...prev, card]))
       .catch(() => setError('Failed to add card to collection'));
   };
 
   const removeFromCollection = (cardId) => {
     if (!user) return;
-    axios.delete(`${BACKEND_URL}/collection/${cardId}`, { withCredentials: true })
+    api.delete(`/collection/${cardId}`)
       .then(() => setCollection(prev => prev.filter(c => c.id !== cardId)))
       .catch(() => setError('Failed to remove card from collection'));
   };
 
   const handleLogout = () => {
-    axios.get(`${BACKEND_URL}/auth/logout`, { withCredentials: true })
+    api.get('/auth/logout')
       .then(() => {
         setCollection([]);
         fetchUser();
