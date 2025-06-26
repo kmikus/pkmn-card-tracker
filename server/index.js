@@ -12,6 +12,11 @@ const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const CALLBACK_URL = process.env.CALLBACK_URL;
 
+console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID);
+console.log('CALLBACK_URL:', process.env.CALLBACK_URL);
+console.log('FRONTEND_URL:', process.env.FRONTEND_URL);
+console.log('NODE_ENV:', process.env.NODE_ENV);
+
 app.set('trust proxy', 1);
 app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173', credentials: true }));
 app.use(express.json());
@@ -67,6 +72,7 @@ passport.use(new GoogleStrategy({
   clientSecret: GOOGLE_CLIENT_SECRET,
   callbackURL: CALLBACK_URL,
 }, (accessToken, refreshToken, profile, done) => {
+  console.log('GoogleStrategy profile:', profile);
   // Save user to DB if not exists
   db.run(
     'INSERT OR IGNORE INTO users (id, displayName, email) VALUES (?, ?, ?)',
@@ -80,10 +86,14 @@ passport.use(new GoogleStrategy({
 
 // Auth routes
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-app.get('/auth/google/callback', passport.authenticate('google', {
+app.get('/auth/google/callback', (req, res, next) => {
+  console.log('Google OAuth callback hit. Query:', req.query);
+  next();
+}, passport.authenticate('google', {
   failureRedirect: '/',
   session: true,
 }), (req, res) => {
+  console.log('Google OAuth success. User:', req.user);
   res.redirect(process.env.FRONTEND_URL || 'http://localhost:5173');
 });
 app.get('/auth/logout', (req, res) => {
@@ -141,6 +151,11 @@ app.delete('/collection/:id', requireAuth, (req, res) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ success: true });
   });
+});
+
+app.use((err, req, res, next) => {
+  console.error('Express error:', err);
+  res.status(500).json({ error: err.message });
 });
 
 app.listen(PORT, () => {
