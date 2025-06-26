@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
-const session = require('express-session');
+const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const app = express();
@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 4000;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const CALLBACK_URL = process.env.CALLBACK_URL;
+const JWT_SECRET = process.env.JWT_SECRET || 'your-jwt-secret';
 
 console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID);
 console.log('CALLBACK_URL:', process.env.CALLBACK_URL);
@@ -25,19 +26,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'supersecret',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-  }
-}));
-app.use(passport.initialize());
-app.use(passport.session());
 
 // Initialize SQLite database
 const db = new sqlite3.Database('./collection.db', (err) => {
@@ -91,6 +79,8 @@ passport.use(new GoogleStrategy({
   );
 }));
 
+app.use(passport.initialize());
+
 // Auth routes
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 app.get('/auth/google/callback', (req, res, next) => {
@@ -98,31 +88,44 @@ app.get('/auth/google/callback', (req, res, next) => {
   next();
 }, passport.authenticate('google', {
   failureRedirect: '/',
-  session: true,
+  session: false, // Don't use sessions
 }), (req, res) => {
   console.log('Google OAuth success. User:', req.user);
-  res.redirect(process.env.FRONTEND_URL || 'http://localhost:5173');
-});
-app.get('/auth/logout', (req, res) => {
-  req.logout(() => {
-    res.json({ success: true });
-  });
-});
-app.get('/auth/user', (req, res) => {
-  if (req.isAuthenticated()) {
-    res.json({ user: req.user });
-  } else {
-    res.json({ user: null });
-  }
+  // Generate JWT token
+  const token = jwt.sign(
+    { id: req.user.id, displayName: req.user.displayName, email: req.user.email },
+    JWT_SECRET,
+    { expiresIn: '24h' }
+  );
+  // Redirect to frontend with token
+  res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}?token=${token}`);
 });
 
-// Middleware to require login
+app.get('/auth/logout', (req, res) => {
+  res.json({ success: true });
+});
+
+// Middleware to verify JWT token
 function requireAuth(req, res, next) {
-  if (!req.isAuthenticated()) {
-    return res.status(401).json({ error: 'Not authenticated' });
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'No token provided' });
   }
-  next();
+  
+  const token = authHeader.substring(7);
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
 }
+
+// Get user info from token
+app.get('/auth/user', requireAuth, (req, res) => {
+  res.json({ user: req.user });
+});
 
 // Get all cards in collection for logged-in user
 app.get('/collection', requireAuth, (req, res) => {
