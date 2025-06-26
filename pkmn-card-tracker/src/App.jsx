@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import './App.css';
 
@@ -133,11 +133,18 @@ function useAuth() {
       });
   }, []);
 
+  const fetchUserWithRetry = useCallback(() => {
+    // Add a small delay to allow session cookie to be set after OAuth redirect
+    setTimeout(() => {
+      fetchUser();
+    }, 100);
+  }, [fetchUser]);
+
   useEffect(() => {
     fetchUser();
   }, [fetchUser]);
 
-  return { user, loading, fetchUser };
+  return { user, loading, fetchUser, fetchUserWithRetry };
 }
 
 function AuthBar({ user, onLogout }) {
@@ -199,8 +206,18 @@ function App() {
   const [selectedPokemon, setSelectedPokemon] = useState(null);
   const [collection, setCollection] = useState([]);
   const [error, setError] = useState(null);
-  const { user, loading: authLoading, fetchUser } = useAuth();
+  const { user, loading: authLoading, fetchUser, fetchUserWithRetry } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Check if user just completed OAuth (redirected from backend)
+  useEffect(() => {
+    // If we're on the root path and there's no user yet, but we have a session cookie,
+    // try to fetch the user (this handles OAuth redirects)
+    if (location.pathname === '/' && !user && !authLoading) {
+      fetchUserWithRetry();
+    }
+  }, [location.pathname, user, authLoading, fetchUserWithRetry]);
 
   // Fetch collection from backend
   const fetchCollection = useCallback(() => {
