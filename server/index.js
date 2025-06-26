@@ -79,7 +79,7 @@ app.get('/auth/google/callback', passport.authenticate('google', {
   failureRedirect: '/',
   session: true,
 }), (req, res) => {
-  res.redirect('http://localhost:5173');
+  res.redirect(process.env.FRONTEND_URL || 'http://localhost:5173');
 });
 app.get('/auth/logout', (req, res) => {
   req.logout(() => {
