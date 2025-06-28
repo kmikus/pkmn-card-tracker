@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tailwind CSS Test</title>
+    <link rel="stylesheet" href="/src/index.css">
+</head>
+<body>
+    <div class="min-h-screen bg-gray-100 p-8">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-4xl font-bold text-blue-600 mb-8 text-center">
+                Tailwind CSS Test
+            </h1>
+            
+            <!-- Test 1: Basic colors and spacing -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Basic Utilities Test</h2>
+                <div class="space-y-4">
+                    <div class="bg-red-500 text-white p-4 rounded">Red background with white text</div>
+                    <div class="bg-green-500 text-white p-4 rounded">Green background with white text</div>
+                    <div class="bg-blue-500 text-white p-4 rounded">Blue background with white text</div>
+                </div>
+            </div>
+            
+            <!-- Test 2: Gap utilities (the one that was failing) -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Gap Utilities Test</h2>
+                <div class="flex flex-wrap gap-4 mb-4">
+                    <div class="bg-purple-500 text-white p-3 rounded">gap-4</div>
+                    <div class="bg-purple-500 text-white p-3 rounded">gap-4</div>
+                    <div class="bg-purple-500 text-white p-3 rounded">gap-4</div>
+                </div>
+                <div class="flex flex-wrap gap-8 mb-4">
+                    <div class="bg-orange-500 text-white p-3 rounded">gap-8</div>
+                    <div class="bg-orange-500 text-white p-3 rounded">gap-8</div>
+                    <div class="bg-orange-500 text-white p-3 rounded">gap-8</div>
+                </div>
+                <div class="flex flex-wrap gap-16">
+                    <div class="bg-teal-500 text-white p-3 rounded">gap-16</div>
+                    <div class="bg-teal-500 text-white p-3 rounded">gap-16</div>
+                    <div class="bg-teal-500 text-white p-3 rounded">gap-16</div>
+                </div>
+            </div>
+            
+            <!-- Test 3: Grid with gap -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Grid Gap Test</h2>
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="bg-pink-500 text-white p-4 rounded text-center">Grid</div>
+                    <div class="bg-pink-500 text-white p-4 rounded text-center">Grid</div>
+                    <div class="bg-pink-500 text-white p-4 rounded text-center">Grid</div>
+                    <div class="bg-pink-500 text-white p-4 rounded text-center">Grid</div>
+                    <div class="bg-pink-500 text-white p-4 rounded text-center">Grid</div>
+                    <div class="bg-pink-500 text-white p-4 rounded text-center">Grid</div>
+                </div>
+            </div>
+            
+            <!-- Test 4: Hover effects -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Hover Effects Test</h2>
+                <div class="flex gap-4">
+                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg transition-colors duration-200">
+                        Hover me
+                    </button>
+                    <button class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition-colors duration-200">
+                        Hover me
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Test 5: Responsive design -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Responsive Test</h2>
+                <div class="text-sm md:text-base lg:text-lg xl:text-xl">
+                    <p class="text-red-600 md:text-green-600 lg:text-blue-600 xl:text-purple-600">
+                        This text changes color on different screen sizes
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

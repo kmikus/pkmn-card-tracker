@@ -1,11 +1,85 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
+interface Pokemon {
+  name: string;
+  id: string;
+  image: string;
+  types: string[];
+}
+
 const POKEAPI_URL = 'https://pokeapi.co/api/v2/pokemon?limit=1008'; // Gen 1-8
 
+// Type color mapping
+const typeColors: { [key: string]: string } = {
+  normal: 'bg-gray-200',
+  fire: 'bg-red-200',
+  water: 'bg-blue-200',
+  electric: 'bg-yellow-200',
+  grass: 'bg-green-200',
+  ice: 'bg-cyan-200',
+  fighting: 'bg-red-300',
+  poison: 'bg-purple-200',
+  ground: 'bg-amber-200',
+  flying: 'bg-indigo-200',
+  psychic: 'bg-pink-200',
+  bug: 'bg-lime-200',
+  rock: 'bg-stone-200',
+  ghost: 'bg-purple-300',
+  dragon: 'bg-violet-300',
+  dark: 'bg-gray-300',
+  steel: 'bg-slate-200',
+  fairy: 'bg-pink-100'
+};
+
+// Type gradient mapping for dual types
+const typeGradients: { [key: string]: string } = {
+  'fire-water': 'bg-gradient-to-br from-red-200 to-blue-200',
+  'fire-grass': 'bg-gradient-to-br from-red-200 to-green-200',
+  'fire-electric': 'bg-gradient-to-br from-red-200 to-yellow-200',
+  'water-grass': 'bg-gradient-to-br from-blue-200 to-green-200',
+  'water-electric': 'bg-gradient-to-br from-blue-200 to-yellow-200',
+  'grass-electric': 'bg-gradient-to-br from-green-200 to-yellow-200',
+  'fire-flying': 'bg-gradient-to-br from-red-200 to-indigo-200',
+  'water-flying': 'bg-gradient-to-br from-blue-200 to-indigo-200',
+  'grass-flying': 'bg-gradient-to-br from-green-200 to-indigo-200',
+  'electric-flying': 'bg-gradient-to-br from-yellow-200 to-indigo-200',
+  'fire-psychic': 'bg-gradient-to-br from-red-200 to-pink-200',
+  'water-psychic': 'bg-gradient-to-br from-blue-200 to-pink-200',
+  'grass-psychic': 'bg-gradient-to-br from-green-200 to-pink-200',
+  'fire-poison': 'bg-gradient-to-br from-red-200 to-purple-200',
+  'water-poison': 'bg-gradient-to-br from-blue-200 to-purple-200',
+  'grass-poison': 'bg-gradient-to-br from-green-200 to-purple-200',
+  'fire-ground': 'bg-gradient-to-br from-red-200 to-amber-200',
+  'water-ground': 'bg-gradient-to-br from-blue-200 to-amber-200',
+  'grass-ground': 'bg-gradient-to-br from-green-200 to-amber-200',
+  'fire-rock': 'bg-gradient-to-br from-red-200 to-stone-200',
+  'water-rock': 'bg-gradient-to-br from-blue-200 to-stone-200',
+  'grass-rock': 'bg-gradient-to-br from-green-200 to-stone-200',
+  'fire-bug': 'bg-gradient-to-br from-red-200 to-lime-200',
+  'water-bug': 'bg-gradient-to-br from-blue-200 to-lime-200',
+  'grass-bug': 'bg-gradient-to-br from-green-200 to-lime-200',
+  'fire-ghost': 'bg-gradient-to-br from-red-200 to-purple-300',
+  'water-ghost': 'bg-gradient-to-br from-blue-200 to-purple-300',
+  'grass-ghost': 'bg-gradient-to-br from-green-200 to-purple-300',
+  'fire-dragon': 'bg-gradient-to-br from-red-200 to-violet-300',
+  'water-dragon': 'bg-gradient-to-br from-blue-200 to-violet-300',
+  'grass-dragon': 'bg-gradient-to-br from-green-200 to-violet-300',
+  'fire-dark': 'bg-gradient-to-br from-red-200 to-gray-300',
+  'water-dark': 'bg-gradient-to-br from-blue-200 to-gray-300',
+  'grass-dark': 'bg-gradient-to-br from-green-200 to-gray-300',
+  'fire-steel': 'bg-gradient-to-br from-red-200 to-slate-200',
+  'water-steel': 'bg-gradient-to-br from-blue-200 to-slate-200',
+  'grass-steel': 'bg-gradient-to-br from-green-200 to-slate-200',
+  'fire-fairy': 'bg-gradient-to-br from-red-200 to-pink-100',
+  'water-fairy': 'bg-gradient-to-br from-blue-200 to-pink-100',
+  'grass-fairy': 'bg-gradient-to-br from-green-200 to-pink-100',
+  // Add more combinations as needed
+};
+
 // Image cache hook
-function useImageCache(urls) {
+function useImageCache(urls: string[]) {
   useEffect(() => {
     if (!urls) return;
     urls.forEach(url => {
@@ -16,33 +90,61 @@ function useImageCache(urls) {
   }, [urls]);
 }
 
-function HomePage({ onSelectPokemon }) {
-  const [pokemonList, setPokemonList] = useState([]);
+function HomePage({ onSelectPokemon }: { onSelectPokemon: (p: Pokemon) => void }) {
+  const [pokemonList, setPokemonList] = useState<Pokemon[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
     axios.get(POKEAPI_URL)
       .then(res => {
-        const results = res.data.results.map((p, idx) => {
-          const id = p.url.split('/').filter(Boolean).pop();
-          return {
-            name: p.name,
-            id,
-            image: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`,
-          };
-        });
-        setPokemonList(results);
-        setLoading(false);
+        const results = res.data.results;
+        // Fetch detailed data for each Pokémon to get types
+        const fetchPokemonDetails = async () => {
+          const pokemonWithTypes: Pokemon[] = [];
+          
+          for (let i = 0; i < Math.min(results.length, 50); i++) { // Limit to first 50 for performance
+            try {
+              const pokemonRes = await axios.get(results[i].url);
+              const types = pokemonRes.data.types.map((type: any) => type.type.name);
+              const id = results[i].url.split('/').filter(Boolean).pop();
+              
+              pokemonWithTypes.push({
+                name: results[i].name,
+                id,
+                image: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`,
+                types
+              });
+            } catch (err) {
+              console.error(`Failed to fetch details for ${results[i].name}`);
+            }
+          }
+          
+          setPokemonList(pokemonWithTypes);
+          setLoading(false);
+        };
+        
+        fetchPokemonDetails();
       })
-      .catch(err => {
+      .catch(() => {
         setError('Failed to fetch Pokémon list');
         setLoading(false);
       });
   }, []);
 
   useImageCache(pokemonList.map(p => p.image));
+
+  const getTileBackground = (types: string[]) => {
+    if (types.length === 1) {
+      return typeColors[types[0]] || 'bg-gray-200';
+    } else if (types.length === 2) {
+      const gradientKey = `${types[0]}-${types[1]}`;
+      const reverseGradientKey = `${types[1]}-${types[0]}`;
+      return typeGradients[gradientKey] || typeGradients[reverseGradientKey] || 'bg-gradient-to-br from-gray-200 to-gray-300';
+    }
+    return 'bg-gray-200';
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
@@ -74,32 +176,22 @@ function HomePage({ onSelectPokemon }) {
           </div>
         )}
         
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-3 md:gap-4">
+        {/* Flexbox layout for Pokémon tiles */}
+        <div className="flex flex-wrap justify-center items-center gap-8">
           {pokemonList.map(p => (
             <div 
               key={p.id} 
-              className="group relative bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:scale-110 hover:-translate-y-2 p-3 text-center border-2 border-transparent hover:border-indigo-300"
+              className={`flex flex-col items-center border-2 border-gray-300 rounded-2xl shadow-sm cursor-pointer transition-all duration-300 hover:shadow-md hover:border-gray-400 p-4 w-32 h-32 ${getTileBackground(p.types)}`}
               onClick={() => onSelectPokemon(p)}
             >
-              {/* Background tile with gradient */}
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl group-hover:from-indigo-50 group-hover:to-purple-50 transition-all duration-300"></div>
-              
-              {/* Pokémon sprite container */}
-              <div className="relative z-10 bg-white rounded-xl p-2 mb-2 shadow-sm group-hover:shadow-md transition-all duration-300">
-                <img 
-                  src={p.image} 
-                  alt={p.name} 
-                  className="w-12 h-12 md:w-14 md:h-14 mx-auto group-hover:scale-110 transition-transform duration-300"
-                />
-              </div>
-              
-              {/* Pokémon name */}
-              <div className="relative z-10 text-xs md:text-sm font-medium text-gray-700 capitalize group-hover:text-indigo-700 transition-colors duration-300">
+              <img 
+                src={p.image} 
+                alt={p.name} 
+                className="w-16 h-16 object-contain mb-4"
+              />
+              <div className="text-lg font-medium text-gray-700 capitalize text-center">
                 {p.name}
               </div>
-              
-              {/* Hover glow effect */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-400/0 to-purple-400/0 group-hover:from-indigo-400/10 group-hover:to-purple-400/10 transition-all duration-300"></div>
             </div>
           ))}
         </div>
