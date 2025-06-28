@@ -1,239 +1,16 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
-import './App.css';
-
-const POKEAPI_URL = 'https://pokeapi.co/api/v2/pokemon?limit=1008'; // Gen 1-8
-const TCG_API_URL = 'https://api.pokemontcg.io/v2/cards';
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
-
-// Create axios instance for backend calls with JWT token
-const api = axios.create({
-  baseURL: BACKEND_URL,
-});
-
-// Add token to requests
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// Image cache hook
-function useImageCache(urls) {
-  useEffect(() => {
-    if (!urls) return;
-    urls.forEach(url => {
-      if (!url) return;
-      const img = new window.Image();
-      img.src = url;
-    });
-  }, [urls]);
-}
-
-function Home({ onSelectPokemon }) {
-  const [pokemonList, setPokemonList] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    setLoading(true);
-    axios.get(POKEAPI_URL)
-      .then(res => {
-        const results = res.data.results.map((p, idx) => {
-          const id = p.url.split('/').filter(Boolean).pop();
-          return {
-            name: p.name,
-            id,
-            image: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`,
-          };
-        });
-        setPokemonList(results);
-        setLoading(false);
-      })
-      .catch(err => {
-        setError('Failed to fetch Pokémon list');
-        setLoading(false);
-      });
-  }, []);
-
-  useImageCache(pokemonList.map(p => p.image));
-
-  return (
-    <div>
-      <h1>Pokémon Card Tracker</h1>
-      <nav style={{marginBottom:'1rem'}}>
-        <Link to="/collection">Your Collection</Link>
-      </nav>
-      <h2>All Pokémon</h2>
-      {loading && <p>Loading Pokémon...</p>}
-      {error && <p>{error}</p>}
-      <div className="card-list">
-        {pokemonList.map(p => (
-          <div key={p.id} className="card-item" onClick={() => onSelectPokemon(p)} style={{cursor:'pointer'}}>
-            <img src={p.image} alt={p.name} />
-            <div style={{textTransform:'capitalize'}}>{p.name}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function PokemonCards({ pokemon, onBack, onAdd, collection }) {
-  const [cards, setCards] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (!pokemon) return;
-    setLoading(true);
-    axios.get(`${TCG_API_URL}?q=name:${pokemon.name}`)
-      .then(res => {
-        setCards(res.data.data);
-        setLoading(false);
-      })
-      .catch(err => {
-        setError('Failed to fetch cards');
-        setLoading(false);
-      });
-  }, [pokemon]);
-
-  useImageCache(cards.map(card => card.images?.small));
-
-  return (
-    <div>
-      <button onClick={onBack} style={{marginBottom:'1rem'}}>← Back to All Pokémon</button>
-      <h2 style={{textTransform:'capitalize'}}>{pokemon.name} Cards</h2>
-      {loading && <p>Loading cards...</p>}
-      {error && <p>{error}</p>}
-      <div className="card-list">
-        {cards.map(card => (
-          <div key={card.id} className="card-item">
-            <img src={card.images.small} alt={card.name} />
-            <div>{card.set.name}</div>
-            <button onClick={() => onAdd(card)} disabled={!!collection.find(c => c.id === card.id)}>
-              {collection.find(c => c.id === card.id) ? 'In Collection' : 'Add to Collection'}
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function useAuth() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const location = useLocation();
-
-  const fetchUser = useCallback(() => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    api.get('/auth/user')
-      .then(res => {
-        setUser(res.data.user);
-        setLoading(false);
-      })
-      .catch(() => {
-        setUser(null);
-        localStorage.removeItem('authToken');
-        setLoading(false);
-      });
-  }, []);
-
-  const fetchUserWithRetry = useCallback(() => {
-    // Add a small delay to allow token to be processed
-    setTimeout(() => {
-      fetchUser();
-    }, 100);
-  }, [fetchUser]);
-
-  // Check for token in URL (from OAuth redirect)
-  useEffect(() => {
-    const urlParams = new URLSearchParams(location.search);
-    const token = urlParams.get('token');
-    if (token) {
-      localStorage.setItem('authToken', token);
-      // Remove token from URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-      fetchUserWithRetry();
-    } else {
-      fetchUser();
-    }
-  }, [location.search, fetchUser, fetchUserWithRetry]);
-
-  return { user, loading, fetchUser, fetchUserWithRetry };
-}
-
-function AuthBar({ user, onLogout }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-      {user ? (
-        <>
-          {user.displayName && <span>Welcome, {user.displayName}</span>}
-          <button onClick={onLogout}>Logout</button>
-        </>
-      ) : (
-        <a href={`${BACKEND_URL}/auth/google`}>
-          <button>Login with Google</button>
-        </a>
-      )}
-    </div>
-  );
-}
-
-function CollectionPage({ collection, onRemove, user, onLogout }) {
-  // Cache all card images
-  useImageCache(collection.map(card => card.images?.small));
-  // Group collection by Pokémon name
-  const groupedCollection = collection.reduce((acc, card) => {
-    const name = card.name;
-    if (!acc[name]) acc[name] = [];
-    acc[name].push(card);
-    return acc;
-  }, {});
-
-  return (
-    <div>
-      <AuthBar user={user} onLogout={onLogout} />
-      <h1>Your Collection</h1>
-      <nav style={{marginBottom:'1rem'}}>
-        <Link to="/">Home</Link>
-      </nav>
-      {!user && <p>Please log in to view your collection.</p>}
-      {user && Object.keys(groupedCollection).length === 0 && <p>No cards in your collection yet.</p>}
-      {user && Object.entries(groupedCollection).map(([name, cards]) => (
-        <div key={name} className="pokemon-group">
-          <h3>{name}</h3>
-          <div className="card-list">
-            {cards.map(card => (
-              <div key={card.id} className="card-item">
-                <img src={card.images.small} alt={card.name} />
-                <div>{card.set.name}</div>
-                <button onClick={() => onRemove(card.id)}>Remove</button>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import HomePage from './components/HomePage';
+import PokemonCardsPage from './components/PokemonCardsPage';
+import CollectionPage from './components/CollectionPage';
+import AuthBar from './components/AuthBar';
+import useAuth from './hooks/useAuth';
 
 function App() {
   const [selectedPokemon, setSelectedPokemon] = useState(null);
   const [collection, setCollection] = useState([]);
   const [error, setError] = useState(null);
-  const { user, loading: authLoading, fetchUser } = useAuth();
+  const { user, loading: authLoading, fetchUser, api } = useAuth();
   const navigate = useNavigate();
 
   // Fetch collection from backend
@@ -245,7 +22,7 @@ function App() {
     api.get('/collection')
       .then(res => setCollection(res.data))
       .catch(() => setCollection([]));
-  }, [user]);
+  }, [user, api]);
 
   useEffect(() => {
     fetchCollection();
@@ -273,26 +50,26 @@ function App() {
   };
 
   return (
-    <>
+    <div className="min-h-screen bg-gray-50">
       <AuthBar user={user} onLogout={handleLogout} />
       <Routes>
         <Route path="/" element={
           selectedPokemon ? (
-            <PokemonCards
+            <PokemonCardsPage
               pokemon={selectedPokemon}
               onBack={() => setSelectedPokemon(null)}
               onAdd={addToCollection}
               collection={collection}
             />
           ) : (
-            <Home onSelectPokemon={setSelectedPokemon} />
+            <HomePage onSelectPokemon={setSelectedPokemon} />
           )
         } />
         <Route path="/collection" element={
           <CollectionPage collection={collection} onRemove={removeFromCollection} user={user} onLogout={handleLogout} />
         } />
       </Routes>
-    </>
+    </div>
   );
 }
 
