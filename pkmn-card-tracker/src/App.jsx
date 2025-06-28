@@ -5,6 +5,7 @@ import PokemonCardsPage from './components/PokemonCardsPage';
 import CollectionPage from './components/CollectionPage';
 import AuthBar from './components/AuthBar';
 import useAuth from './hooks/useAuth';
+import './index.css';
 
 function App() {
   const [selectedPokemon, setSelectedPokemon] = useState(null);

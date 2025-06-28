@@ -45,50 +45,61 @@ function HomePage({ onSelectPokemon }) {
   useImageCache(pokemonList.map(p => p.image));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-800 text-center mb-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-4xl md:text-6xl font-bold text-gray-800 text-center mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
           Pokémon Card Tracker
         </h1>
         <nav className="flex justify-center mb-8">
           <Link 
             to="/collection" 
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 shadow-lg hover:shadow-xl"
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
           >
             Your Collection
           </Link>
         </nav>
-        <h2 className="text-2xl md:text-3xl font-semibold text-gray-700 text-center mb-8">
+        <h2 className="text-2xl md:text-3xl font-semibold text-gray-700 text-center mb-12">
           All Pokémon
         </h2>
         
         {loading && (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          <div className="flex justify-center items-center py-16">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-600 border-t-transparent"></div>
           </div>
         )}
         
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg text-center">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-xl text-center max-w-md mx-auto">
             {error}
           </div>
         )}
         
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-3 md:gap-4">
           {pokemonList.map(p => (
             <div 
               key={p.id} 
-              className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer transform hover:scale-105 p-4 text-center"
+              className="group relative bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:scale-110 hover:-translate-y-2 p-3 text-center border-2 border-transparent hover:border-indigo-300"
               onClick={() => onSelectPokemon(p)}
             >
-              <img 
-                src={p.image} 
-                alt={p.name} 
-                className="w-16 h-16 mx-auto mb-2"
-              />
-              <div className="text-sm font-medium text-gray-700 capitalize">
+              {/* Background tile with gradient */}
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl group-hover:from-indigo-50 group-hover:to-purple-50 transition-all duration-300"></div>
+              
+              {/* Pokémon sprite container */}
+              <div className="relative z-10 bg-white rounded-xl p-2 mb-2 shadow-sm group-hover:shadow-md transition-all duration-300">
+                <img 
+                  src={p.image} 
+                  alt={p.name} 
+                  className="w-12 h-12 md:w-14 md:h-14 mx-auto group-hover:scale-110 transition-transform duration-300"
+                />
+              </div>
+              
+              {/* Pokémon name */}
+              <div className="relative z-10 text-xs md:text-sm font-medium text-gray-700 capitalize group-hover:text-indigo-700 transition-colors duration-300">
                 {p.name}
               </div>
+              
+              {/* Hover glow effect */}
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-400/0 to-purple-400/0 group-hover:from-indigo-400/10 group-hover:to-purple-400/10 transition-all duration-300"></div>
             </div>
           ))}
         </div>
