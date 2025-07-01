@@ -1,8 +1,10 @@
+import React from 'react';
+
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
 
 function AuthBar({ user, onLogout }) {
   return (
-    <div className="bg-white shadow-md p-4 mb-6">
+    <div className="bg-white/80 backdrop-blur-sm shadow-lg p-4">
       <div className="max-w-6xl mx-auto flex items-center justify-between">
         <div className="text-xl font-bold text-gray-800">
           Pokémon Card Tracker

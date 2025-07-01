@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEffect, useState, useCallback } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import HomePage from './components/HomePage';
@@ -5,19 +6,20 @@ import PokemonCardsPage from './components/PokemonCardsPage';
 import CollectionPage from './components/CollectionPage';
 import AuthBar from './components/AuthBar';
 import useAuth from './hooks/useAuth';
+import { saveCollection, loadCollection } from './utils/storage';
 import './index.css';
 
 function App() {
-  const [selectedPokemon, setSelectedPokemon] = useState(null);
-  const [collection, setCollection] = useState([]);
-  const [error, setError] = useState(null);
+  const [selectedPokemon, setSelectedPokemon] = useState<any>(null);
+  const [collection, setCollection] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const { user, loading: authLoading, fetchUser, api } = useAuth();
   const navigate = useNavigate();
 
-  // Fetch collection from backend
+  // Fetch collection from backend or localStorage
   const fetchCollection = useCallback(() => {
     if (!user) {
-      setCollection([]);
+      setCollection(loadCollection());
       return;
     }
     api.get('/collection')
@@ -30,14 +32,28 @@ function App() {
   }, [fetchCollection]);
 
   const addToCollection = (card) => {
-    if (!user) return;
+    if (!user) {
+      setCollection(prev => {
+        const updated = [...prev, card];
+        saveCollection(updated);
+        return updated;
+      });
+      return;
+    }
     api.post('/collection', card)
       .then(() => setCollection(prev => [...prev, card]))
       .catch(() => setError('Failed to add card to collection'));
   };
 
   const removeFromCollection = (cardId) => {
-    if (!user) return;
+    if (!user) {
+      setCollection(prev => {
+        const updated = prev.filter(c => c.id !== cardId);
+        saveCollection(updated);
+        return updated;
+      });
+      return;
+    }
     api.delete(`/collection/${cardId}`)
       .then(() => setCollection(prev => prev.filter(c => c.id !== cardId)))
       .catch(() => setError('Failed to remove card from collection'));
@@ -63,7 +79,7 @@ function App() {
               collection={collection}
             />
           ) : (
-            <HomePage onSelectPokemon={setSelectedPokemon} />
+            <HomePage onSelectPokemon={(p) => setSelectedPokemon(p)} />
           )
         } />
         <Route path="/collection" element={

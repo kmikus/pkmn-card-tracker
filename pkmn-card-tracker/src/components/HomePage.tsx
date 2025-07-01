@@ -62,20 +62,20 @@ function HomePage({ onSelectPokemon }: { onSelectPokemon: (p: Pokemon) => void }
         <h1 className="text-4xl md:text-6xl font-bold text-gray-800 text-center mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
           Pokémon Card Tracker
         </h1>
-        <nav className="flex justify-center items-center gap-4 mb-8">
+        <nav className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
           <Link 
             to="/collection" 
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 w-full sm:w-auto text-center shadow-indigo-200/50 hover:shadow-indigo-300/50"
           >
             Your Collection
           </Link>
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <input
               type="text"
               placeholder="Search Pokémon..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-4 border-2 border-gray-300 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors duration-200 w-64"
+              className="pl-10 pr-4 py-4 border-2 border-gray-300 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors duration-200 w-full sm:w-64"
             />
             <svg 
               className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" 
