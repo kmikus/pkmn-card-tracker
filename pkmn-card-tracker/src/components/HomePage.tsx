@@ -59,7 +59,7 @@ function HomePage({ onSelectPokemon }: { onSelectPokemon: (p: Pokemon) => void }
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl md:text-6xl font-bold text-gray-800 text-center mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold text-gray-800 text-center mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
           Pokémon Card Tracker
         </h1>
         <nav className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
@@ -105,15 +105,15 @@ function HomePage({ onSelectPokemon }: { onSelectPokemon: (p: Pokemon) => void }
           {filteredPokemon.map(p => (
             <div 
               key={p.id} 
-              className="flex flex-col items-center bg-gray-100 border-2 border-gray-300 rounded-2xl shadow-sm cursor-pointer transition-all duration-300 hover:shadow-md hover:border-gray-400 p-4 w-32 h-32"
+              className="flex flex-col items-center bg-gray-100 border-2 border-gray-300 rounded-2xl shadow-sm cursor-pointer transition-all duration-500 ease-in-out hover:shadow-md hover:border-gray-400 hover:scale-105 p-4 w-32 h-32 animate-in fade-in-0 zoom-in-95 duration-300"
               onClick={() => onSelectPokemon(p)}
             >
               <img 
                 src={p.image} 
                 alt={p.name} 
-                className="w-16 h-16 object-contain mb-4"
+                className="w-16 h-16 object-contain mb-4 transition-transform duration-300"
               />
-              <div className="text-lg font-medium text-gray-700 capitalize text-center">
+              <div className="text-lg font-medium text-gray-700 capitalize text-center transition-colors duration-300">
                 {p.name}
               </div>
             </div>

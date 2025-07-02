@@ -76,6 +76,7 @@ function App() {
               pokemon={selectedPokemon}
               onBack={() => setSelectedPokemon(null)}
               onAdd={addToCollection}
+              onRemove={removeFromCollection}
               collection={collection}
             />
           ) : (

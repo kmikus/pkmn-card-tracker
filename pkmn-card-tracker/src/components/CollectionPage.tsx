@@ -24,28 +24,40 @@ function CollectionPage({ collection, onRemove, user, onLogout }) {
     return acc;
   }, {});
 
-  // Dismissible guest note
-  const [showGuestNote, setShowGuestNote] = useState(true);
+  // Dismissible guest note with localStorage persistence
+  const [showGuestNote, setShowGuestNote] = useState(() => {
+    if (user) return false; // Don't show for logged-in users
+    return localStorage.getItem('guestNoteDismissed') !== 'true';
+  });
+
+  const dismissGuestNote = () => {
+    setShowGuestNote(false);
+    localStorage.setItem('guestNoteDismissed', 'true');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
-      <div className="max-w-6xl mx-auto p-4">
-        {/* Header row: title left, button right */}
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 text-left">
-            Your Collection
-          </h1>
-          <Link 
-            to="/" 
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 shadow-lg hover:shadow-xl"
-          >
-            {/* Custom home icon from assets */}
-            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path fillRule="evenodd" clipRule="evenodd" d="M12 3.1875L21.4501 10.275L21.0001 11.625H20.25V20.25H3.75005V11.625H3.00005L2.55005 10.275L12 3.1875ZM5.25005 10.125V18.75H18.75V10.125L12 5.0625L5.25005 10.125Z" fill="white"/>
-            </svg>
-            Back to Home
-          </Link>
+      <div className="sticky top-0 z-10 bg-gradient-to-br from-green-50 to-emerald-100 pt-4 pb-2 px-4 border-b border-gray-200/50">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between">
+            <Link 
+              to="/" 
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white p-3 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              {/* Custom home icon from assets */}
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fillRule="evenodd" clipRule="evenodd" d="M12 3.1875L21.4501 10.275L21.0001 11.625H20.25V20.25H3.75005V11.625H3.00005L2.55005 10.275L12 3.1875ZM5.25005 10.125V18.75H18.75V10.125L12 5.0625L5.25005 10.125Z" fill="white"/>
+              </svg>
+            </Link>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold text-gray-800 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Your Collection
+            </h1>
+          </div>
         </div>
+      </div>
+      
+      <div className="p-4">
+        <div className="max-w-6xl mx-auto">
         {/* Guest info message - modern alert style, full width, dismissible */}
         {!user && showGuestNote && (
           <div className="relative flex items-center bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded-lg text-sm mb-6 max-w-3xl mx-auto shadow">
@@ -53,7 +65,7 @@ function CollectionPage({ collection, onRemove, user, onLogout }) {
               Your collection is temporarily stored in your browser. Log in to save it permanently across devices.
             </span>
             <button
-              onClick={() => setShowGuestNote(false)}
+              onClick={dismissGuestNote}
               className="absolute top-2 right-2 text-yellow-700 hover:text-yellow-900 text-lg font-bold px-2 focus:outline-none"
               aria-label="Dismiss"
               style={{ lineHeight: 1 }}
@@ -75,7 +87,7 @@ function CollectionPage({ collection, onRemove, user, onLogout }) {
               </h3>
             </div>
             <div className="p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {(cards as any[]).map(card => (
                   <div key={card.id} className="bg-gray-50 rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200">
                     <img 
@@ -100,6 +112,7 @@ function CollectionPage({ collection, onRemove, user, onLogout }) {
             </div>
           </div>
         ))}
+        </div>
       </div>
     </div>
   );
