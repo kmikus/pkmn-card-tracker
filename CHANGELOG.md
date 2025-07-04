@@ -1,5 +1,30 @@
 # Changelog
 
+## [v0.4.0] - Persistent data storage with PostgreSQL migration
+### Added
+- PostgreSQL database integration for authenticated users
+- Hybrid storage system: localStorage for guests, PostgreSQL for authenticated users
+- Async storage functions with proper error handling and loading states
+- Comprehensive deployment guide for PostgreSQL setup
+- Database connection test script
+- Loading indicators and error messages for better UX
+- Automatic error clearing after 5 seconds
+
+### Changed
+- Migrated from SQLite to PostgreSQL for production-ready persistent storage
+- Updated all storage operations to be async with proper error handling
+- Enhanced UI with loading states during card operations
+- Improved error handling throughout the application
+- Updated backend to use PostgreSQL connection pooling
+
+### Technical
+- Replaced sqlite3 with pg (PostgreSQL client)
+- Added proper TypeScript types for better type safety
+- Implemented connection pooling for better database performance
+- Added SSL configuration for production deployments
+
+---
+
 ## [v0.3.0] - Major UI/UX improvements and responsive design overhaul
 ### Added
 - Pokéball logo in AuthBar with gradient styling and home navigation
