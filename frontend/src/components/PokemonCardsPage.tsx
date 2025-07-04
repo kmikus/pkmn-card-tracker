@@ -68,8 +68,8 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="sticky top-0 z-10 bg-gradient-to-br from-blue-50 to-indigo-100 pt-4 pb-2 px-4 border-b border-gray-200/50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-200">
+      <div className="sticky top-0 z-10 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 pt-4 pb-2 px-4 border-b border-gray-200/50 dark:border-gray-700/50">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between">
             <button 
@@ -81,7 +81,7 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }) {
                 <path fillRule="evenodd" clipRule="evenodd" d="M12 3.1875L21.4501 10.275L21.0001 11.625H20.25V20.25H3.75005V11.625H3.00005L2.55005 10.275L12 3.1875ZM5.25005 10.125V18.75H18.75V10.125L12 5.0625L5.25005 10.125Z" fill="white"/>
               </svg>
             </button>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold text-gray-800 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent capitalize">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold text-gray-800 dark:text-white bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent capitalize">
               {pokemon.name}
             </h2>
           </div>
@@ -98,7 +98,7 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }) {
         )}
         
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg text-center mb-6">
+          <div className="bg-red-100 dark:bg-red-900/50 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg text-center mb-6">
             {error}
           </div>
         )}
@@ -109,14 +109,14 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }) {
             const isProcessing = processingCards.has(card.id);
             
             return (
-              <div key={card.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col h-full">
+              <div key={card.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col h-full">
                 <img 
                   src={card.images.small} 
                   alt={card.name} 
                   className="w-full h-auto"
                 />
                 <div className="p-4 flex flex-col flex-grow">
-                  <div className="text-sm text-gray-600 mb-3 flex-shrink-0">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-3 flex-shrink-0">
                     {card.set.name}
                   </div>
                   <div className="mt-auto">
@@ -125,7 +125,7 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }) {
                       disabled={isProcessing}
                       className={`w-full py-2 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
                         isProcessing
-                          ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                          ? 'bg-gray-400 dark:bg-gray-600 text-gray-600 dark:text-gray-400 cursor-not-allowed'
                           : isInCollection 
                             ? 'bg-red-500 hover:bg-red-600 text-white' 
                             : 'bg-green-500 hover:bg-green-600 text-white'
