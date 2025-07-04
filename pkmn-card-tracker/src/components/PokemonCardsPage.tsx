@@ -1,12 +1,21 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import plusIcon from '../assets/plus-circle-svgrepo-com.svg';
-import minusIcon from '../assets/minus-circle-svgrepo-com.svg';
 
 const TCG_API_URL = 'https://api.pokemontcg.io/v2/cards';
 
+interface Card {
+  id: string;
+  name: string;
+  images: {
+    small: string;
+  };
+  set: {
+    name: string;
+  };
+}
+
 // Image cache hook
-function useImageCache(urls) {
+function useImageCache(urls: string[]) {
   useEffect(() => {
     if (!urls) return;
     urls.forEach(url => {
@@ -18,9 +27,10 @@ function useImageCache(urls) {
 }
 
 function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }) {
-  const [cards, setCards] = useState([]);
+  const [cards, setCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [processingCards, setProcessingCards] = useState(new Set<string>());
 
   useEffect(() => {
     if (!pokemon) return;
@@ -37,6 +47,25 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }) {
   }, [pokemon]);
 
   useImageCache(cards.map(card => card.images?.small));
+
+  const handleCardAction = async (card: Card, isAdd: boolean) => {
+    const cardId = card.id;
+    setProcessingCards(prev => new Set(prev).add(cardId));
+    
+    try {
+      if (isAdd) {
+        await onAdd(card);
+      } else {
+        await onRemove(cardId);
+      }
+    } finally {
+      setProcessingCards(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(cardId);
+        return newSet;
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -77,6 +106,8 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }) {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
           {cards.map(card => {
             const isInCollection = collection.find(c => c.id === card.id);
+            const isProcessing = processingCards.has(card.id);
+            
             return (
               <div key={card.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col h-full">
                 <img 
@@ -90,27 +121,34 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }) {
                   </div>
                   <div className="mt-auto">
                     <button 
-                      onClick={() => isInCollection ? onRemove(card.id) : onAdd(card)} 
+                      onClick={() => handleCardAction(card, !isInCollection)}
+                      disabled={isProcessing}
                       className={`w-full py-2 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
-                        isInCollection 
-                          ? 'bg-red-500 hover:bg-red-600 text-white' 
-                          : 'bg-green-500 hover:bg-green-600 text-white'
+                        isProcessing
+                          ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                          : isInCollection 
+                            ? 'bg-red-500 hover:bg-red-600 text-white' 
+                            : 'bg-green-500 hover:bg-green-600 text-white'
                       }`}
                     >
-                    <svg 
-                      className="w-5 h-5" 
-                      viewBox="0 0 24 24" 
-                      fill="currentColor"
-                    >
-                      {isInCollection ? (
-                        // Minus circle icon
-                        <path fillRule="evenodd" clipRule="evenodd" d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM8 12C8 11.4477 8.44772 11 9 11H15C15.5523 11 16 11.4477 16 12C16 12.5523 15.5523 13 15 13H9C8.44772 13 8 12.5523 8 12Z" />
-                      ) : (
-                        // Plus circle icon
-                        <path fillRule="evenodd" clipRule="evenodd" d="M13 9C13 8.44772 12.5523 8 12 8C11.4477 8 11 8.44772 11 9V11H9C8.44772 11 8 11.4477 8 12C8 12.5523 8.44772 13 9 13H11V15C11 15.5523 11.4477 16 12 16C12.5523 16 13 15.5523 13 15V13H15C15.5523 13 16 12.5523 16 12C16 11.4477 15.5523 11 15 11H13V9ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12Z" />
-                      )}
-                    </svg>
-                    {isInCollection ? 'Remove' : 'Add'}
+                    {isProcessing ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                    ) : (
+                      <svg 
+                        className="w-5 h-5" 
+                        viewBox="0 0 24 24" 
+                        fill="currentColor"
+                      >
+                        {isInCollection ? (
+                          // Minus circle icon
+                          <path fillRule="evenodd" clipRule="evenodd" d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM8 12C8 11.4477 8.44772 11 9 11H15C15.5523 11 16 11.4477 16 12C16 12.5523 15.5523 13 15 13H9C8.44772 13 8 12.5523 8 12Z" />
+                        ) : (
+                          // Plus circle icon
+                          <path fillRule="evenodd" clipRule="evenodd" d="M13 9C13 8.44772 12.5523 8 12 8C11.4477 8 11 8.44772 11 9V11H9C8.44772 11 8 11.4477 8 12C8 12.5523 8.44772 13 9 13H11V15C11 15.5523 11.4477 16 12 16C12.5523 16 13 15.5523 13 15V13H15C15.5523 13 16 12.5523 16 12C16 11.4477 15.5523 11 15 11H13V9ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12Z" />
+                        )}
+                      </svg>
+                    )}
+                    {isProcessing ? 'Processing...' : (isInCollection ? 'Remove' : 'Add')}
                   </button>
                   </div>
                 </div>

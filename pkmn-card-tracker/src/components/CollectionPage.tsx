@@ -14,8 +14,11 @@ function useImageCache(urls) {
 }
 
 function CollectionPage({ collection, onRemove, user, onLogout }) {
+  const [removingCards, setRemovingCards] = useState(new Set());
+  
   // Cache all card images
   useImageCache(collection.map(card => card.images?.small));
+  
   // Group collection by Pokémon name
   const groupedCollection = collection.reduce((acc, card) => {
     const name = card.name;
@@ -33,6 +36,19 @@ function CollectionPage({ collection, onRemove, user, onLogout }) {
   const dismissGuestNote = () => {
     setShowGuestNote(false);
     localStorage.setItem('guestNoteDismissed', 'true');
+  };
+
+  const handleRemoveCard = async (cardId: string) => {
+    setRemovingCards(prev => new Set(prev).add(cardId));
+    try {
+      await onRemove(cardId);
+    } finally {
+      setRemovingCards(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(cardId);
+        return newSet;
+      });
+    }
   };
 
   return (
@@ -100,10 +116,15 @@ function CollectionPage({ collection, onRemove, user, onLogout }) {
                         {card.set.name}
                       </div>
                       <button 
-                        onClick={() => onRemove(card.id)}
-                        className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-md text-sm font-medium transition-colors duration-200"
+                        onClick={() => handleRemoveCard(card.id)}
+                        disabled={removingCards.has(card.id)}
+                        className={`w-full py-2 px-3 rounded-md text-sm font-medium transition-colors duration-200 ${
+                          removingCards.has(card.id)
+                            ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                            : 'bg-red-600 hover:bg-red-700 text-white'
+                        }`}
                       >
-                        Remove
+                        {removingCards.has(card.id) ? 'Removing...' : 'Remove'}
                       </button>
                     </div>
                   </div>

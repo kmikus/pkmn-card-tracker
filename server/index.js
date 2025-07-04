@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
@@ -27,56 +27,74 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Initialize SQLite database
-const db = new sqlite3.Database('./collection.db', (err) => {
-  if (err) return console.error('DB open error:', err.message);
-  console.log('Connected to SQLite database.');
+// Initialize PostgreSQL database
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS users (
-    id TEXT PRIMARY KEY,
-    displayName TEXT,
-    email TEXT
-  )`);
-  db.run(`CREATE TABLE IF NOT EXISTS collection (
-    id TEXT,
-    userId TEXT,
-    name TEXT,
-    setName TEXT,
-    image TEXT,
-    data TEXT,
-    PRIMARY KEY (id, userId),
-    FOREIGN KEY (userId) REFERENCES users(id)
-  )`);
-});
+// Initialize database tables
+async function initializeDatabase() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        displayName TEXT,
+        email TEXT
+      )
+    `);
+    
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS collection (
+        id TEXT,
+        userId TEXT,
+        name TEXT,
+        setName TEXT,
+        image TEXT,
+        data TEXT,
+        PRIMARY KEY (id, userId),
+        FOREIGN KEY (userId) REFERENCES users(id)
+      )
+    `);
+    
+    console.log('Database tables initialized successfully');
+  } catch (error) {
+    console.error('Error initializing database:', error);
+  }
+}
+
+initializeDatabase();
 
 // Passport config
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });
-passport.deserializeUser((id, done) => {
-  db.get('SELECT * FROM users WHERE id = ?', [id], (err, row) => {
-    if (err) return done(err);
-    done(null, row);
-  });
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+    done(null, result.rows[0]);
+  } catch (err) {
+    done(err);
+  }
 });
 
 passport.use(new GoogleStrategy({
   clientID: GOOGLE_CLIENT_ID,
   clientSecret: GOOGLE_CLIENT_SECRET,
   callbackURL: CALLBACK_URL,
-}, (accessToken, refreshToken, profile, done) => {
+}, async (accessToken, refreshToken, profile, done) => {
   console.log('GoogleStrategy profile:', profile);
-  // Save user to DB if not exists
-  db.run(
-    'INSERT OR IGNORE INTO users (id, displayName, email) VALUES (?, ?, ?)',
-    [profile.id, profile.displayName, profile.emails[0].value],
-    (err) => {
-      if (err) return done(err);
-      done(null, { id: profile.id, displayName: profile.displayName, email: profile.emails[0].value });
-    }
-  );
+  try {
+    // Save user to DB if not exists
+    await pool.query(
+      'INSERT INTO users (id, displayName, email) VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING',
+      [profile.id, profile.displayName, profile.emails[0].value]
+    );
+    done(null, { id: profile.id, displayName: profile.displayName, email: profile.emails[0].value });
+  } catch (error) {
+    done(error);
+  }
 }));
 
 app.use(passport.initialize());
@@ -128,39 +146,47 @@ app.get('/auth/user', requireAuth, (req, res) => {
 });
 
 // Get all cards in collection for logged-in user
-app.get('/collection', requireAuth, (req, res) => {
-  db.all('SELECT * FROM collection WHERE userId = ?', [req.user.id], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    const cards = rows.map(row => ({
+app.get('/collection', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM collection WHERE userId = $1', [req.user.id]);
+    const cards = result.rows.map(row => ({
       id: row.id,
       name: row.name,
-      set: { name: row.setName },
+      set: { name: row.setname },
       images: { small: row.image },
       ...JSON.parse(row.data)
     }));
     res.json(cards);
-  });
+  } catch (error) {
+    console.error('Error fetching collection:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Add a card to collection for logged-in user
-app.post('/collection', requireAuth, (req, res) => {
-  const card = req.body;
-  db.run(
-    'INSERT OR REPLACE INTO collection (id, userId, name, setName, image, data) VALUES (?, ?, ?, ?, ?, ?)',
-    [card.id, req.user.id, card.name, card.set?.name || '', card.images?.small || '', JSON.stringify(card)],
-    function (err) {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ success: true });
-    }
-  );
+app.post('/collection', requireAuth, async (req, res) => {
+  try {
+    const card = req.body;
+    await pool.query(
+      'INSERT INTO collection (id, userId, name, setName, image, data) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (id, userId) DO UPDATE SET name = $3, setName = $4, image = $5, data = $6',
+      [card.id, req.user.id, card.name, card.set?.name || '', card.images?.small || '', JSON.stringify(card)]
+    );
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error adding card to collection:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Remove a card from collection for logged-in user
-app.delete('/collection/:id', requireAuth, (req, res) => {
-  db.run('DELETE FROM collection WHERE id = ? AND userId = ?', [req.params.id, req.user.id], function (err) {
-    if (err) return res.status(500).json({ error: err.message });
+app.delete('/collection/:id', requireAuth, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM collection WHERE id = $1 AND userId = $2', [req.params.id, req.user.id]);
     res.json({ success: true });
-  });
+  } catch (error) {
+    console.error('Error removing card from collection:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.use((err, req, res, next) => {
