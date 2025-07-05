@@ -9,7 +9,7 @@ function AuthBar({ user, onLogout }) {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
 
   return (
-    <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm shadow-lg p-4">
+    <div className="bg-white/90 dark:bg-gray-950/95 backdrop-blur-sm shadow-lg dark:shadow-gray-900/50 border-b border-gray-200/50 dark:border-gray-700/50 p-4">
       <div className="max-w-6xl mx-auto flex items-center justify-between">
         <div className="flex items-center">
           <Link to="/" className="hover:scale-105 transition-transform duration-200">
@@ -26,7 +26,7 @@ function AuthBar({ user, onLogout }) {
           {/* Dark Mode Toggle */}
           <button
             onClick={toggleDarkMode}
-            className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
+            className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 border border-gray-200 dark:border-gray-600"
             aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {isDarkMode ? (
