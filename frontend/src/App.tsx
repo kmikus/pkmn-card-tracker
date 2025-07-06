@@ -9,8 +9,18 @@ import useAuth from './hooks/useAuth';
 import { saveCollection, loadCollection, addCardToCollection, removeCardFromCollection } from './utils/storage';
 import './index.css';
 
+interface Pokemon {
+  name: string;
+  id: string;
+  image: string;
+  displayName: string;
+  baseName: string;
+  isForm: boolean;
+  isRegional: boolean;
+}
+
 function App() {
-  const [selectedPokemon, setSelectedPokemon] = useState<any>(null);
+  const [selectedPokemon, setSelectedPokemon] = useState<Pokemon | null>(null);
   const [collection, setCollection] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,11 +65,11 @@ function App() {
     }
   };
 
-  const removeFromCollection = async (cardId) => {
+  const removeFromCollection = async (cardId: string) => {
     try {
       const success = await removeCardFromCollection(cardId);
       if (success) {
-        setCollection(prev => prev.filter(c => c.id !== cardId));
+        setCollection(prev => prev.filter(card => card.id !== cardId));
       } else {
         setError('Failed to remove card from collection');
       }
@@ -69,11 +79,13 @@ function App() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    setCollection([]);
-    fetchUser();
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await api.post('/auth/logout');
+      navigate('/');
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
   };
 
   // Clear error after 5 seconds
@@ -84,10 +96,10 @@ function App() {
     }
   }, [error]);
 
-  if (authLoading || loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-600 border-t-transparent"></div>
       </div>
     );
   }
@@ -113,7 +125,7 @@ function App() {
               collection={collection}
             />
           ) : (
-            <HomePage onSelectPokemon={(p) => setSelectedPokemon(p)} />
+            <HomePage onSelectPokemon={(p: Pokemon) => setSelectedPokemon(p)} />
           )
         } />
         <Route path="/collection" element={

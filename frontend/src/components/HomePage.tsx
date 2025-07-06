@@ -1,60 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import { usePokemonCache } from '../hooks/usePokemonCache';
 
 interface Pokemon {
   name: string;
   id: string;
   image: string;
-}
-
-const POKEAPI_URL = 'https://pokeapi.co/api/v2/pokemon?limit=1008'; // Gen 1-8
-
-// Image cache hook
-function useImageCache(urls: string[]) {
-  useEffect(() => {
-    if (!urls) return;
-    urls.forEach(url => {
-      if (!url) return;
-      const img = new window.Image();
-      img.src = url;
-    });
-  }, [urls]);
+  displayName: string;
+  baseName: string;
+  isForm: boolean;
+  isRegional: boolean;
 }
 
 function HomePage({ onSelectPokemon }: { onSelectPokemon: (p: Pokemon) => void }) {
-  const [pokemonList, setPokemonList] = useState<Pokemon[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const { pokemonList, loading, error, loadedImages, preloadImages } = usePokemonCache();
+  const [localLoadedImages, setLocalLoadedImages] = useState(new Set<string>());
 
+  // Preload first 50 images on mount
   useEffect(() => {
-    setLoading(true);
-    axios.get(POKEAPI_URL)
-      .then(res => {
-        const results: Pokemon[] = res.data.results.map((p: any, idx: number) => {
-          const id = p.url.split('/').filter(Boolean).pop();
-          return {
-            name: p.name,
-            id: id || '',
-            image: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`,
-          };
-        });
-        setPokemonList(results);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError('Failed to fetch Pokémon list');
-        setLoading(false);
-      });
-  }, []);
+    if (pokemonList.length > 0) {
+      preloadImages(0, 50);
+    }
+  }, [pokemonList.length, preloadImages]);
 
-  useImageCache(pokemonList.map(p => p.image));
+  // Handle individual image load
+  const handleImageLoad = (imageUrl: string) => {
+    setLocalLoadedImages(prev => new Set(prev).add(imageUrl));
+  };
 
   // Filter Pokémon based on search term
-  const filteredPokemon = pokemonList.filter(pokemon =>
-    pokemon.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredPokemon = pokemonList.filter(pokemon => {
+    const displayName = pokemon.displayName || pokemon.name;
+    const searchLower = searchTerm.toLowerCase();
+    return displayName.toLowerCase().includes(searchLower) ||
+           pokemon.name.toLowerCase().includes(searchLower);
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 transition-colors duration-200">
@@ -102,22 +83,30 @@ function HomePage({ onSelectPokemon }: { onSelectPokemon: (p: Pokemon) => void }
         
         {/* Flexbox layout for Pokémon tiles */}
         <div className="flex flex-wrap justify-center items-center gap-8">
-          {filteredPokemon.map(p => (
-            <div 
-              key={p.id} 
-              className="flex flex-col items-center bg-gray-100 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-2xl shadow-sm cursor-pointer transition-all duration-500 ease-in-out hover:shadow-md hover:border-gray-400 dark:hover:border-gray-500 hover:scale-105 p-4 w-32 h-32 animate-in fade-in-0 zoom-in-95 duration-300"
-              onClick={() => onSelectPokemon(p)}
-            >
-              <img 
-                src={p.image} 
-                alt={p.name} 
-                className="w-16 h-16 object-contain mb-4 transition-transform duration-300"
-              />
-              <div className="text-lg font-medium text-gray-700 dark:text-gray-300 capitalize text-center transition-colors duration-300">
-                {p.name}
+          {filteredPokemon.map(p => {
+            const displayName = p.displayName || p.name;
+            return (
+              <div 
+                key={p.id} 
+                className="relative flex flex-col items-center bg-gray-100 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-2xl shadow-sm cursor-pointer transition-all duration-500 ease-in-out hover:shadow-md hover:border-gray-400 dark:hover:border-gray-500 hover:scale-105 p-4 w-32 h-32 animate-in fade-in-0 zoom-in-95 duration-300"
+                onClick={() => onSelectPokemon(p)}
+              >
+                <img 
+                  src={p.image} 
+                  alt={displayName} 
+                  className={`w-16 h-16 object-contain mb-4 transition-all duration-300 ${
+                    localLoadedImages.has(p.image) ? 'opacity-100' : 'opacity-50'
+                  }`}
+                  onLoad={() => handleImageLoad(p.image)}
+                  onError={() => handleImageLoad(p.image)}
+                  style={{ marginBottom: '2.5rem' }} // Reserve space for text
+                />
+                <div className="absolute bottom-0 left-0 w-full text-lg font-medium text-gray-700 dark:text-gray-300 text-center transition-colors duration-300 px-2 pb-2 pointer-events-none" style={{lineHeight: '1.1'}}>
+                  {displayName}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         
         {searchTerm && filteredPokemon.length === 0 && (

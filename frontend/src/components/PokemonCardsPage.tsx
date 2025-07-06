@@ -14,6 +14,16 @@ interface Card {
   };
 }
 
+interface Pokemon {
+  name: string;
+  id: string;
+  image: string;
+  displayName: string;
+  baseName: string;
+  isForm: boolean;
+  isRegional: boolean;
+}
+
 // Image cache hook
 function useImageCache(urls: string[]) {
   useEffect(() => {
@@ -26,7 +36,13 @@ function useImageCache(urls: string[]) {
   }, [urls]);
 }
 
-function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }) {
+function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }: {
+  pokemon: Pokemon;
+  onBack: () => void;
+  onAdd: (card: Card) => Promise<void>;
+  onRemove: (cardId: string) => Promise<void>;
+  collection: Card[];
+}) {
   const [cards, setCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +51,11 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }) {
   useEffect(() => {
     if (!pokemon) return;
     setLoading(true);
-    axios.get(`${TCG_API_URL}?q=name:${pokemon.name}`)
+    
+    // Use the base name for searching cards to get all forms
+    const searchName = pokemon.baseName;
+    
+    axios.get(`${TCG_API_URL}?q=name:${searchName}`)
       .then(res => {
         setCards(res.data.data);
         setLoading(false);
@@ -81,8 +101,8 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }) {
                 <path fillRule="evenodd" clipRule="evenodd" d="M12 3.1875L21.4501 10.275L21.0001 11.625H20.25V20.25H3.75005V11.625H3.00005L2.55005 10.275L12 3.1875ZM5.25005 10.125V18.75H18.75V10.125L12 5.0625L5.25005 10.125Z" fill="white"/>
               </svg>
             </button>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold text-gray-800 dark:text-white bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent capitalize">
-              {pokemon.name}
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold text-gray-800 dark:text-white bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent text-center max-w-md">
+              {pokemon.displayName}
             </h2>
           </div>
         </div>
