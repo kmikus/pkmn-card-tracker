@@ -31,22 +31,24 @@ function HomePage({ onSelectPokemon }: { onSelectPokemon: (p: Pokemon) => void }
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 transition-colors duration-200">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold text-gray-800 dark:text-white text-center mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold text-gray-800 dark:text-white text-center mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent dark:bg-none dark:text-white dark:[text-shadow:_0_0_8px_rgba(99,102,241,0.5),_0_0_16px_rgba(147,51,234,0.3),_0_0_24px_rgba(99,102,241,0.2)]">
           Pokémon Card Tracker
         </h1>
-        <nav className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
-          <Link 
-            to="/collection" 
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 w-full sm:w-auto text-center shadow-indigo-200/50 hover:shadow-indigo-300/50 dark:shadow-indigo-500/20 dark:hover:shadow-indigo-500/30"
-          >
-            Your Collection
-          </Link>
-          <Link 
-            to="/sets" 
-            className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 w-full sm:w-auto text-center shadow-green-200/50 hover:shadow-green-300/50 dark:shadow-green-500/20 dark:hover:shadow-green-500/30"
-          >
-            Browse Sets
-          </Link>
+        <nav className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+          <div className="flex flex-row justify-center items-center gap-4 w-full sm:w-auto">
+            <Link 
+              to="/collection" 
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-4 sm:px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 w-1/2 sm:w-auto text-center shadow-indigo-200/50 hover:shadow-indigo-300/50 dark:shadow-indigo-500/20 dark:hover:shadow-indigo-500/30"
+            >
+              Your Collection
+            </Link>
+            <Link 
+              to="/sets" 
+              className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white px-4 sm:px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 w-1/2 sm:w-auto text-center shadow-green-200/50 hover:shadow-green-300/50 dark:shadow-green-500/20 dark:hover:shadow-green-500/30"
+            >
+              Browse Sets
+            </Link>
+          </div>
           <div className="relative w-full sm:w-auto">
             <input
               type="text"

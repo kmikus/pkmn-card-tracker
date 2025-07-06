@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useSetsCache } from '../hooks/useSetsCache';
 import { CardSet } from '../types';
 
@@ -38,11 +39,29 @@ function SetsPage({ onSelectSet }: { onSelectSet: (set: CardSet) => void }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 transition-colors duration-200">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold text-gray-800 dark:text-white text-center mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-          Card Sets
-        </h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-200">
+      <div className="sticky top-0 z-10 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 pt-4 pb-2 px-4 border-b border-gray-200/50 dark:border-gray-700/50">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between">
+            <Link 
+              to="/" 
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white p-3 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              {/* Custom home icon from assets */}
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fillRule="evenodd" clipRule="evenodd" d="M12 3.1875L21.4501 10.275L21.0001 11.625H20.25V20.25H3.75005V11.625H3.00005L2.55005 10.275L12 3.1875ZM5.25005 10.125V18.75H18.75V10.125L12 5.0625L5.25005 10.125Z" fill="white"/>
+              </svg>
+            </Link>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold text-gray-800 dark:text-white bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent dark:bg-none dark:text-white dark:[text-shadow:_0_0_8px_rgba(99,102,241,0.5),_0_0_16px_rgba(147,51,234,0.3),_0_0_24px_rgba(99,102,241,0.2)]">
+              Card Sets
+            </h1>
+            <div className="w-12"></div> {/* Spacer for centering */}
+          </div>
+        </div>
+      </div>
+      
+      <div className="p-4">
+        <div className="max-w-7xl mx-auto">
         
         <div className="flex justify-center mb-8">
           <div className="relative w-full sm:w-auto">
@@ -123,6 +142,7 @@ function SetsPage({ onSelectSet }: { onSelectSet: (set: CardSet) => void }) {
             No sets found matching "{searchTerm}"
           </div>
         )}
+        </div>
       </div>
     </div>
   );
