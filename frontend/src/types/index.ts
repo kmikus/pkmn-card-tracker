@@ -21,6 +21,21 @@ export interface Card {
   };
 }
 
+export interface CardSet {
+  id: string;
+  name: string;
+  series: string;
+  printedTotal: number;
+  total: number;
+  ptcgoCode?: string;
+  releaseDate: string;
+  updatedAt: string;
+  images: {
+    symbol: string;
+    logo: string;
+  };
+}
+
 export interface User {
   id: string;
   name: string;
@@ -43,6 +58,18 @@ export interface CollectionPageProps {
 
 export interface PokemonCardsPageProps {
   pokemon: Pokemon;
+  onBack: () => void;
+  onAdd: (card: Card) => Promise<void>;
+  onRemove: (cardId: string) => Promise<void>;
+  collection: Card[];
+}
+
+export interface SetsPageProps {
+  onSelectSet: (set: CardSet) => void;
+}
+
+export interface SetCardsPageProps {
+  set: CardSet;
   onBack: () => void;
   onAdd: (card: Card) => Promise<void>;
   onRemove: (cardId: string) => Promise<void>;

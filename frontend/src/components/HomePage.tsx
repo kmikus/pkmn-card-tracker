@@ -41,6 +41,12 @@ function HomePage({ onSelectPokemon }: { onSelectPokemon: (p: Pokemon) => void }
           >
             Your Collection
           </Link>
+          <Link 
+            to="/sets" 
+            className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 w-full sm:w-auto text-center shadow-green-200/50 hover:shadow-green-300/50 dark:shadow-green-500/20 dark:hover:shadow-green-500/30"
+          >
+            Browse Sets
+          </Link>
           <div className="relative w-full sm:w-auto">
             <input
               type="text"

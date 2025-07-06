@@ -3,17 +3,20 @@ import { useEffect, useState, useCallback } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import HomePage from './components/HomePage';
 import PokemonCardsPage from './components/PokemonCardsPage';
+import SetsPage from './components/SetsPage';
+import SetCardsPage from './components/SetCardsPage';
 import CollectionPage from './components/CollectionPage';
 import AuthBar from './components/AuthBar';
 import useAuth from './hooks/useAuth';
 import { saveCollection, loadCollection, addCardToCollection, removeCardFromCollection } from './utils/storage';
-import { Pokemon, Card, User } from './types';
+import { Pokemon, Card, CardSet, User } from './types';
 import './index.css';
 
 
 
 function App() {
   const [selectedPokemon, setSelectedPokemon] = useState<Pokemon | null>(null);
+  const [selectedSet, setSelectedSet] = useState<CardSet | null>(null);
   const [collection, setCollection] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -119,6 +122,19 @@ function App() {
             />
           ) : (
             <HomePage onSelectPokemon={(p: Pokemon) => setSelectedPokemon(p)} />
+          )
+        } />
+        <Route path="/sets" element={
+          selectedSet ? (
+            <SetCardsPage
+              set={selectedSet}
+              onBack={() => setSelectedSet(null)}
+              onAdd={addToCollection}
+              onRemove={removeFromCollection}
+              collection={collection}
+            />
+          ) : (
+            <SetsPage onSelectSet={(s: CardSet) => setSelectedSet(s)} />
           )
         } />
         <Route path="/collection" element={
