@@ -1,10 +1,33 @@
-require('dotenv').config();
-const express = require('express');
-const { Pool } = require('pg');
-const cors = require('cors');
-const jwt = require('jsonwebtoken');
-const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
+import 'dotenv/config';
+import express, { Request, Response, NextFunction } from 'express';
+import { Pool } from 'pg';
+import cors from 'cors';
+import jwt from 'jsonwebtoken';
+import passport from 'passport';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+
+// Type definitions
+interface User {
+  id: string;
+  displayName: string;
+  email: string;
+}
+
+interface AuthenticatedRequest extends Request {
+  user?: User;
+}
+
+// Extend Express User interface
+declare global {
+  namespace Express {
+    interface User {
+      id: string;
+      displayName: string;
+      email: string;
+    }
+  }
+}
+
 const app = express();
 
 const PORT = process.env.PORT || 4000;
@@ -68,11 +91,11 @@ async function initializeDatabase() {
 initializeDatabase();
 
 // Passport config
-passport.serializeUser((user, done) => {
+passport.serializeUser((user: User, done) => {
   done(null, user.id);
 });
 
-passport.deserializeUser(async (id, done) => {
+passport.deserializeUser(async (id: string, done) => {
   try {
     const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
     done(null, result.rows[0]);
@@ -82,10 +105,10 @@ passport.deserializeUser(async (id, done) => {
 });
 
 passport.use(new GoogleStrategy({
-  clientID: GOOGLE_CLIENT_ID,
-  clientSecret: GOOGLE_CLIENT_SECRET,
-  callbackURL: CALLBACK_URL,
-}, async (accessToken, refreshToken, profile, done) => {
+  clientID: GOOGLE_CLIENT_ID!,
+  clientSecret: GOOGLE_CLIENT_SECRET!,
+  callbackURL: CALLBACK_URL!,
+}, async (accessToken: string, refreshToken: string, profile: any, done: any) => {
   console.log('GoogleStrategy profile:', profile);
   try {
     // Save user to DB if not exists
@@ -111,6 +134,10 @@ app.get('/auth/google/callback', (req, res, next) => {
   session: false, // Don't use sessions
 }), (req, res) => {
   console.log('Google OAuth success. User:', req.user);
+  if (!req.user) {
+    res.status(401).json({ error: 'Authentication failed' });
+    return;
+  }
   // Generate JWT token
   const token = jwt.sign(
     { id: req.user.id, displayName: req.user.displayName, email: req.user.email },
@@ -126,30 +153,36 @@ app.get('/auth/logout', (req, res) => {
 });
 
 // Middleware to verify JWT token
-function requireAuth(req, res, next) {
+function requireAuth(req: Request, res: Response, next: NextFunction): void {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'No token provided' });
+    res.status(401).json({ error: 'No token provided' });
+    return;
   }
   
   const token = authHeader.substring(7);
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
+    const decoded = jwt.verify(token, JWT_SECRET) as User;
+    (req as AuthenticatedRequest).user = decoded;
     next();
   } catch (err) {
-    return res.status(401).json({ error: 'Invalid token' });
+    res.status(401).json({ error: 'Invalid token' });
+    return;
   }
 }
 
 // Get user info from token
-app.get('/auth/user', requireAuth, (req, res) => {
+app.get('/auth/user', requireAuth, (req: AuthenticatedRequest, res: Response) => {
   res.json({ user: req.user });
 });
 
 // Get all cards in collection for logged-in user
-app.get('/collection', requireAuth, async (req, res) => {
+app.get('/collection', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
+    if (!req.user) {
+      res.status(401).json({ error: 'User not authenticated' });
+      return;
+    }
     const result = await pool.query('SELECT * FROM collection WHERE userId = $1', [req.user.id]);
     const cards = result.rows.map(row => ({
       id: row.id,
@@ -161,13 +194,17 @@ app.get('/collection', requireAuth, async (req, res) => {
     res.json(cards);
   } catch (error) {
     console.error('Error fetching collection:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: (error as Error).message });
   }
 });
 
 // Add a card to collection for logged-in user
-app.post('/collection', requireAuth, async (req, res) => {
+app.post('/collection', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
+    if (!req.user) {
+      res.status(401).json({ error: 'User not authenticated' });
+      return;
+    }
     const card = req.body;
     await pool.query(
       'INSERT INTO collection (id, userId, name, setName, image, data) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (id, userId) DO UPDATE SET name = $3, setName = $4, image = $5, data = $6',
@@ -176,26 +213,31 @@ app.post('/collection', requireAuth, async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error adding card to collection:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: (error as Error).message });
   }
 });
 
 // Remove a card from collection for logged-in user
-app.delete('/collection/:id', requireAuth, async (req, res) => {
+app.delete('/collection/:id', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
+    if (!req.user) {
+      res.status(401).json({ error: 'User not authenticated' });
+      return;
+    }
     await pool.query('DELETE FROM collection WHERE id = $1 AND userId = $2', [req.params.id, req.user.id]);
     res.json({ success: true });
   } catch (error) {
     console.error('Error removing card from collection:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: (error as Error).message });
   }
 });
 
-app.use((err, req, res, next) => {
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error('Express error:', err);
   res.status(500).json({ error: err.message });
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on http://0.0.0.0:${PORT}`);
+const port = typeof PORT === 'string' ? parseInt(PORT, 10) : PORT;
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Server running on http://0.0.0.0:${port}`);
 }); 

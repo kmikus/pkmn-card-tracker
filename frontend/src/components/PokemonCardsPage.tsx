@@ -1,28 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Pokemon, Card } from '../types';
 
 const TCG_API_URL = 'https://api.pokemontcg.io/v2/cards';
-
-interface Card {
-  id: string;
-  name: string;
-  images: {
-    small: string;
-  };
-  set: {
-    name: string;
-  };
-}
-
-interface Pokemon {
-  name: string;
-  id: string;
-  image: string;
-  displayName: string;
-  baseName: string;
-  isForm: boolean;
-  isRegional: boolean;
-}
 
 // Image cache hook
 function useImageCache(urls: string[]) {
@@ -52,8 +32,8 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }: {
     if (!pokemon) return;
     setLoading(true);
     
-    // Use the base name for searching cards to get all forms
-    const searchName = pokemon.baseName;
+    // Use the base name for searching cards to get all forms, fallback to regular name
+    const searchName = pokemon.baseName || pokemon.name;
     
     axios.get(`${TCG_API_URL}?q=name:${searchName}`)
       .then(res => {

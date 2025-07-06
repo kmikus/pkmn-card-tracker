@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { CollectionPageProps, Card } from '../types';
 
 // Image cache hook
-function useImageCache(urls) {
+function useImageCache(urls: string[]) {
   useEffect(() => {
     if (!urls) return;
-    urls.forEach(url => {
+    urls.forEach((url: string) => {
       if (!url) return;
       const img = new window.Image();
       img.src = url;
@@ -13,14 +14,14 @@ function useImageCache(urls) {
   }, [urls]);
 }
 
-function CollectionPage({ collection, onRemove, user, onLogout }) {
+function CollectionPage({ collection, onRemove, user, onLogout }: CollectionPageProps) {
   const [removingCards, setRemovingCards] = useState(new Set());
   
   // Cache all card images
   useImageCache(collection.map(card => card.images?.small));
   
   // Group collection by Pokémon name
-  const groupedCollection = collection.reduce((acc, card) => {
+  const groupedCollection = collection.reduce((acc: Record<string, Card[]>, card: Card) => {
     const name = card.name;
     if (!acc[name]) acc[name] = [];
     acc[name].push(card);

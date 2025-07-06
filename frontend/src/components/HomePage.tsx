@@ -1,16 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { usePokemonCache } from '../hooks/usePokemonCache';
-
-interface Pokemon {
-  name: string;
-  id: string;
-  image: string;
-  displayName: string;
-  baseName: string;
-  isForm: boolean;
-  isRegional: boolean;
-}
+import { Pokemon } from '../types';
 
 function HomePage({ onSelectPokemon }: { onSelectPokemon: (p: Pokemon) => void }) {
   const [searchTerm, setSearchTerm] = useState('');

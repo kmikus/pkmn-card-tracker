@@ -1,13 +1,5 @@
 import axios from 'axios';
 
-declare global {
-  interface ImportMeta {
-    env: {
-      VITE_BACKEND_URL?: string;
-    };
-  }
-}
-
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
 
 // Create axios instance for backend calls with JWT token

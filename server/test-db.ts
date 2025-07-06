@@ -1,5 +1,5 @@
-require('dotenv').config();
-const { Pool } = require('pg');
+import 'dotenv/config';
+import { Pool } from 'pg';
 
 // Test database connection
 async function testConnection() {
@@ -42,7 +42,7 @@ async function testConnection() {
     console.log('✅ Cleanup successful!');
     
   } catch (error) {
-    console.error('❌ Database test failed:', error.message);
+    console.error('❌ Database test failed:', (error as Error).message);
     process.exit(1);
   } finally {
     await pool.end();

@@ -7,21 +7,14 @@ import CollectionPage from './components/CollectionPage';
 import AuthBar from './components/AuthBar';
 import useAuth from './hooks/useAuth';
 import { saveCollection, loadCollection, addCardToCollection, removeCardFromCollection } from './utils/storage';
+import { Pokemon, Card, User } from './types';
 import './index.css';
 
-interface Pokemon {
-  name: string;
-  id: string;
-  image: string;
-  displayName: string;
-  baseName: string;
-  isForm: boolean;
-  isRegional: boolean;
-}
+
 
 function App() {
   const [selectedPokemon, setSelectedPokemon] = useState<Pokemon | null>(null);
-  const [collection, setCollection] = useState<any[]>([]);
+  const [collection, setCollection] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user, loading: authLoading, fetchUser, api } = useAuth();
@@ -45,7 +38,7 @@ function App() {
     fetchCollection();
   }, [fetchCollection]);
 
-  const addToCollection = async (card) => {
+  const addToCollection = async (card: Card) => {
     try {
       const success = await addCardToCollection(card);
       if (success) {

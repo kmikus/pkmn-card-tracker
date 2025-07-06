@@ -2,10 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import pokeballLogo from '../assets/pokeball-pokemon-catch-svgrepo-com.svg';
 import { useDarkMode } from '../hooks/useDarkMode';
+import { AuthBarProps } from '../types';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
 
-function AuthBar({ user, onLogout }) {
+function AuthBar({ user, onLogout }: AuthBarProps) {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
 
   return (
