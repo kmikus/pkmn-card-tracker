@@ -1,5 +1,71 @@
 # Changelog
 
+## [v0.7.0] - Set browsing functionality and UI improvements
+### Added
+- Complete set browsing functionality with dedicated SetsPage component
+- SetCardsPage component for viewing cards from specific sets
+- useSetsCache hook for fetching and caching Pokémon card sets data
+- CardSet interface and related TypeScript types
+- /sets route with proper navigation and state management
+- Set search functionality by name, series, and PTCGO code
+- Set logos, symbols, release dates, and card counts display
+- Home button on SetsPage for consistent navigation
+
+### Changed
+- Improved HomePage navigation layout for better mobile/desktop responsiveness
+  - Buttons side by side on mobile (50% width each)
+  - All elements on same line on desktop with proper centering
+  - Search bar on separate line on mobile, inline on desktop
+- Centered all page headings consistently across the app
+- Added subtle gradient text glow effects in dark mode for all headings
+- Enhanced visual consistency and user experience throughout the app
+
+### Technical
+- Added proper routing for set browsing functionality
+- Implemented image caching for set logos and symbols
+- Maintained consistent styling patterns across all new components
+
+---
+
+## [v0.6.0] - Backend TypeScript migration and frontend type safety
+### Added
+- Complete TypeScript migration for backend codebase
+- TypeScript configuration for backend with proper type definitions
+- Enhanced type safety across all backend endpoints
+- Proper TypeScript types for database operations and API responses
+
+### Changed
+- Migrated all backend JavaScript files to TypeScript (.js → .ts)
+- Updated package.json scripts for TypeScript compilation
+- Enhanced error handling with proper TypeScript types
+- Improved development experience with better type checking
+
+### Technical
+- Added @types/node, @types/express, @types/cors, @types/pg for backend
+- Configured tsconfig.json for backend TypeScript compilation
+- Updated build process to compile TypeScript before deployment
+
+---
+
+## [v0.5.0] - Pokémon species API integration and simplified data handling
+### Added
+- Integration with /pokemon-species API endpoint for accurate Pokémon data
+- Simplified image and card fetching logic
+- Improved data consistency across the application
+
+### Changed
+- Removed complex form/hyphen logic for Pokémon names
+- Updated Pokémon list to use species data as source of truth
+- Simplified image URL generation and card search functionality
+- Enhanced data accuracy and reduced edge cases
+
+### Technical
+- Streamlined API calls for better performance
+- Improved data handling and consistency
+- Reduced complexity in Pokémon name processing
+
+---
+
 ## [v0.4.0] - Persistent data storage with PostgreSQL migration
 ### Added
 - PostgreSQL database integration for authenticated users
