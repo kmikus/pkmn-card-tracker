@@ -184,13 +184,19 @@ app.get('/collection', requireAuth, async (req: AuthenticatedRequest, res: Respo
       return;
     }
     const result = await pool.query('SELECT * FROM collection WHERE userId = $1', [req.user.id]);
-    const cards = result.rows.map(row => ({
-      id: row.id,
-      name: row.name,
-      set: { name: row.setname },
-      images: { small: row.image },
-      ...JSON.parse(row.data)
-    }));
+    const cards = result.rows.map(row => {
+      const cardData = JSON.parse(row.data);
+      return {
+        id: row.id,
+        name: row.name,
+        set: { 
+          id: cardData.set?.id || row.setname, // Use set ID from stored data, fallback to name
+          name: cardData.set?.name || row.setname 
+        },
+        images: { small: row.image },
+        ...cardData
+      };
+    });
     res.json(cards);
   } catch (error) {
     console.error('Error fetching collection:', error);

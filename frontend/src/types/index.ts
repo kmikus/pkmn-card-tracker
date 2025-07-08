@@ -17,6 +17,7 @@ export interface Card {
     small: string;
   };
   set: {
+    id: string;
     name: string;
   };
 }

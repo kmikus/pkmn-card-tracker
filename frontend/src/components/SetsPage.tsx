@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSetsCache } from '../hooks/useSetsCache';
-import { CardSet } from '../types';
+import { CardSet, Card } from '../types';
 
-function SetsPage({ onSelectSet }: { onSelectSet: (set: CardSet) => void }) {
+function SetsPage({ onSelectSet, collection }: { 
+  onSelectSet: (set: CardSet) => void;
+  collection: Card[];
+}) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const { setsList, loading, error, loadedImages, preloadImages } = useSetsCache();
@@ -43,6 +46,13 @@ function SetsPage({ onSelectSet }: { onSelectSet: (set: CardSet) => void }) {
       month: 'short', 
       day: 'numeric' 
     });
+  };
+
+  // Calculate card count for a specific set
+  const getCardCountForSet = (setId: string) => {
+    return collection.filter(card => {
+      return card.set && card.set.id === setId;
+    }).length;
   };
 
   return (
@@ -155,6 +165,9 @@ function SetsPage({ onSelectSet }: { onSelectSet: (set: CardSet) => void }) {
                   <span className="text-sm text-gray-600 dark:text-gray-400">
                     {set.printedTotal} cards
                   </span>
+                </div>
+                <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                  {getCardCountForSet(set.id)}/{set.printedTotal} collected
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-500">
                   {formatReleaseDate(set.releaseDate)}

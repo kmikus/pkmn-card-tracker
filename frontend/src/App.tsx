@@ -134,7 +134,10 @@ function App() {
               collection={collection}
             />
           ) : (
-            <SetsPage onSelectSet={(s: CardSet) => setSelectedSet(s)} />
+            <SetsPage 
+              onSelectSet={(s: CardSet) => setSelectedSet(s)}
+              collection={collection}
+            />
           )
         } />
         <Route path="/collection" element={
