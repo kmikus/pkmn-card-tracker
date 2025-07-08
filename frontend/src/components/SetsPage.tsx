@@ -5,6 +5,7 @@ import { CardSet } from '../types';
 
 function SetsPage({ onSelectSet }: { onSelectSet: (set: CardSet) => void }) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const { setsList, loading, error, loadedImages, preloadImages } = useSetsCache();
   const [localLoadedImages, setLocalLoadedImages] = useState(new Set<string>());
 
@@ -20,13 +21,19 @@ function SetsPage({ onSelectSet }: { onSelectSet: (set: CardSet) => void }) {
     setLocalLoadedImages(prev => new Set(prev).add(imageUrl));
   };
 
-  // Filter sets based on search term
-  const filteredSets = setsList.filter(set => {
-    const searchLower = searchTerm.toLowerCase();
-    return set.name.toLowerCase().includes(searchLower) ||
-           set.series.toLowerCase().includes(searchLower) ||
-           (set.ptcgoCode && set.ptcgoCode.toLowerCase().includes(searchLower));
-  });
+  // Filter and sort sets
+  const filteredAndSortedSets = setsList
+    .filter(set => {
+      const searchLower = searchTerm.toLowerCase();
+      return set.name.toLowerCase().includes(searchLower) ||
+             set.series.toLowerCase().includes(searchLower) ||
+             (set.ptcgoCode && set.ptcgoCode.toLowerCase().includes(searchLower));
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.releaseDate).getTime();
+      const dateB = new Date(b.releaseDate).getTime();
+      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+    });
 
   // Format release date
   const formatReleaseDate = (dateString: string) => {
@@ -63,7 +70,7 @@ function SetsPage({ onSelectSet }: { onSelectSet: (set: CardSet) => void }) {
       <div className="p-4">
         <div className="max-w-7xl mx-auto">
         
-        <div className="flex justify-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
           <div className="relative w-full sm:w-auto">
             <input
               type="text"
@@ -81,6 +88,26 @@ function SetsPage({ onSelectSet }: { onSelectSet: (set: CardSet) => void }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
+          <button
+            onClick={() => setSortOrder(sortOrder === 'newest' ? 'oldest' : 'newest')}
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
+          >
+            <svg 
+              className="w-5 h-5" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              {sortOrder === 'newest' ? (
+                // Down arrow for newest first
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              ) : (
+                // Up arrow for oldest first
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+              )}
+            </svg>
+            {sortOrder === 'newest' ? 'Newest First' : 'Oldest First'}
+          </button>
         </div>
         
         {loading && (
@@ -97,7 +124,7 @@ function SetsPage({ onSelectSet }: { onSelectSet: (set: CardSet) => void }) {
         
         {/* Grid layout for set tiles */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {filteredSets.map(set => (
+          {filteredAndSortedSets.map(set => (
             <div 
               key={set.id} 
               className="bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-2xl shadow-sm cursor-pointer transition-all duration-500 ease-in-out hover:shadow-md hover:border-gray-400 dark:hover:border-gray-500 hover:scale-105 p-6 animate-in fade-in-0 zoom-in-95 duration-300"
@@ -137,7 +164,7 @@ function SetsPage({ onSelectSet }: { onSelectSet: (set: CardSet) => void }) {
           ))}
         </div>
         
-        {searchTerm && filteredSets.length === 0 && (
+        {searchTerm && filteredAndSortedSets.length === 0 && (
           <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             No sets found matching "{searchTerm}"
           </div>
