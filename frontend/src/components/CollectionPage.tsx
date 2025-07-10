@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CollectionPageProps, Card } from '../types';
+import { usePokemonCache } from '../hooks/usePokemonCache';
 
 // Image cache hook
 function useImageCache(urls: string[]) {
@@ -14,17 +15,41 @@ function useImageCache(urls: string[]) {
   }, [urls]);
 }
 
+// Function to extract base Pokémon name from cards with prefixes
+function getBasePokemonName(cardName: string, pokemonList: any[]): string {
+  const cardNameLower = cardName.toLowerCase();
+  let bestMatch = '';
+  let bestMatchLength = 0;
+  for (const pokemon of pokemonList) {
+    const pokemonName = pokemon.name.toLowerCase();
+    const displayName = pokemon.displayName.toLowerCase();
+    if (cardNameLower.includes(pokemonName) && pokemonName.length > bestMatchLength) {
+      bestMatch = pokemon.name;
+      bestMatchLength = pokemonName.length;
+    }
+    if (cardNameLower.includes(displayName) && displayName.length > bestMatchLength) {
+      bestMatch = pokemon.name;
+      bestMatchLength = displayName.length;
+    }
+  }
+  if (bestMatch) {
+    return bestMatch;
+  }
+  return cardName;
+}
+
 function CollectionPage({ collection, onRemove, user, onLogout }: CollectionPageProps) {
   const [removingCards, setRemovingCards] = useState(new Set());
+  const { pokemonList } = usePokemonCache();
   
   // Cache all card images
   useImageCache(collection.map(card => card.images?.small));
   
-  // Group collection by Pokémon name
+  // Group collection by base Pokémon name
   const groupedCollection = collection.reduce((acc: Record<string, Card[]>, card: Card) => {
-    const name = card.name;
-    if (!acc[name]) acc[name] = [];
-    acc[name].push(card);
+    const baseName = getBasePokemonName(card.name, pokemonList);
+    if (!acc[baseName]) acc[baseName] = [];
+    acc[baseName].push(card);
     return acc;
   }, {});
 
