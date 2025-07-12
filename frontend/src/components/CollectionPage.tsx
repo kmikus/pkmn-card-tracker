@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CollectionPageProps, Card } from '../types';
 import { usePokemonCache } from '../hooks/usePokemonCache';
+import FilterPanel, { FilterState } from './FilterPanel';
 
 // Image cache hook
 function useImageCache(urls: string[]) {
@@ -18,16 +19,49 @@ function useImageCache(urls: string[]) {
 function CollectionPage({ collection, onRemove, user, onLogout }: CollectionPageProps) {
   const [removingCards, setRemovingCards] = useState(new Set());
   const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState<FilterState>({
+    sets: [],
+    types: [],
+    rarities: [],
+    species: []
+  });
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const { pokemonList } = usePokemonCache();
   
   // Cache all card images
   useImageCache(collection.map(card => card.images?.small));
   
-  // Filter collection based on search term
-  const filteredCollection = collection.filter(card => 
-    card.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    card.set.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter collection based on search term and filters
+  const filteredCollection = collection.filter(card => {
+    // Search filter
+    const matchesSearch = !searchTerm || 
+      card.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      card.set.name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (!matchesSearch) return false;
+    
+    // Set filter
+    if (filters.sets.length > 0 && !filters.sets.includes(card.set.name)) {
+      return false;
+    }
+    
+    // Type filter
+    if (filters.types.length > 0 && (!card.types || !card.types.some(type => filters.types.includes(type)))) {
+      return false;
+    }
+    
+    // Rarity filter
+    if (filters.rarities.length > 0 && (!card.rarity || !filters.rarities.includes(card.rarity))) {
+      return false;
+    }
+    
+    // Species filter
+    if (filters.species.length > 0 && (!card.nationalPokedexNumbers || !card.nationalPokedexNumbers.some(num => filters.species.includes(num)))) {
+      return false;
+    }
+    
+    return true;
+  });
 
   // Dismissible guest note with localStorage persistence
   const [showGuestNote, setShowGuestNote] = useState(() => {
@@ -52,6 +86,24 @@ function CollectionPage({ collection, onRemove, user, onLogout }: CollectionPage
       });
     }
   };
+
+  // Close filter panel when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.filter-panel')) {
+        setIsFilterPanelOpen(false);
+      }
+    };
+
+    if (isFilterPanelOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isFilterPanelOpen]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-200">
@@ -94,9 +146,10 @@ function CollectionPage({ collection, onRemove, user, onLogout }: CollectionPage
             </div>
           )}
 
-          {/* Search Bar */}
-          <div className="mb-6">
-            <div className="relative max-w-md mx-auto">
+          {/* Search and Filter Bar */}
+          <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-center">
+            {/* Search Bar */}
+            <div className="relative max-w-md w-full">
               <input
                 type="text"
                 placeholder="Search cards by name or set..."
@@ -110,6 +163,17 @@ function CollectionPage({ collection, onRemove, user, onLogout }: CollectionPage
                 </svg>
               </div>
             </div>
+
+            {/* Filter Panel */}
+            <div className="filter-panel">
+              <FilterPanel
+                collection={collection}
+                filters={filters}
+                onFiltersChange={setFilters}
+                isOpen={isFilterPanelOpen}
+                onToggle={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
+              />
+            </div>
           </div>
 
           {/* Collection Stats */}
@@ -117,14 +181,17 @@ function CollectionPage({ collection, onRemove, user, onLogout }: CollectionPage
             <p className="text-gray-600 dark:text-gray-400">
               {filteredCollection.length} of {collection.length} cards
               {searchTerm && ` matching "${searchTerm}"`}
+              {(filters.sets.length > 0 || filters.types.length > 0 || filters.rarities.length > 0 || filters.species.length > 0) && 
+                ` with ${filters.sets.length + filters.types.length + filters.rarities.length + filters.species.length} active filters`
+              }
             </p>
           </div>
 
           {/* Empty State */}
           {filteredCollection.length === 0 && (
             <div className="bg-blue-100 dark:bg-blue-900/50 border border-blue-400 dark:border-blue-600 text-blue-700 dark:text-blue-300 px-6 py-4 rounded-lg text-center text-lg">
-              {searchTerm 
-                ? `No cards found matching "${searchTerm}". Try a different search term.`
+              {searchTerm || filters.sets.length > 0 || filters.types.length > 0 || filters.rarities.length > 0 || filters.species.length > 0
+                ? 'No cards found matching your search and filter criteria. Try adjusting your filters.'
                 : 'No cards in your collection yet. Start by browsing Pokémon and adding cards!'
               }
             </div>

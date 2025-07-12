@@ -20,6 +20,12 @@ export interface Card {
     id: string;
     name: string;
   };
+  // Additional properties for filtering
+  supertype?: string;
+  subtypes?: string[];
+  types?: string[];
+  rarity?: string;
+  nationalPokedexNumbers?: number[];
 }
 
 export interface CardSet {
