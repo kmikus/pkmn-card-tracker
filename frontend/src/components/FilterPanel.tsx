@@ -25,6 +25,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   onToggle
 }) => {
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [speciesSearchTerm, setSpeciesSearchTerm] = useState('');
   const { pokemonList } = usePokemonCache();
 
   // Create a mapping from Pokédex number to Pokémon name
@@ -62,6 +63,16 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       species: Array.from(species).sort((a, b) => a - b)
     };
   }, [collection]);
+
+  // Filter species based on search term
+  const filteredSpecies = useMemo(() => {
+    if (!speciesSearchTerm) return filterOptions.species;
+    
+    return filterOptions.species.filter(speciesNum => {
+      const pokemonName = speciesMapping[speciesNum];
+      return pokemonName && pokemonName.toLowerCase().includes(speciesSearchTerm.toLowerCase());
+    });
+  }, [filterOptions.species, speciesMapping, speciesSearchTerm]);
 
   // Count cards for each filter option
   const filterCounts = useMemo(() => {
@@ -135,6 +146,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 
   const toggleSection = (section: string) => {
     setActiveSection(activeSection === section ? null : section);
+    // Clear search term when closing species section
+    if (section !== 'species') {
+      setSpeciesSearchTerm('');
+    }
   };
 
   return (
@@ -313,28 +328,53 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                   </svg>
                 </button>
                 {activeSection === 'species' && (
-                  <div className="mt-3 space-y-2 max-h-32 overflow-y-auto">
-                    {filterOptions.species.map(speciesNum => {
-                      const pokemonName = speciesMapping[speciesNum] || `#${speciesNum}`;
-                      return (
-                        <label key={speciesNum} className="flex items-center justify-between cursor-pointer">
-                          <div className="flex items-center">
-                            <input
-                              type="checkbox"
-                              checked={filters.species.includes(speciesNum)}
-                              onChange={(e) => handleFilterChange('species', speciesNum, e.target.checked)}
-                              className="mr-2 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                            />
-                            <span className="text-sm text-gray-700 dark:text-gray-300">
-                              {pokemonName}
-                            </span>
-                          </div>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
-                            {filterCounts.species[speciesNum] || 0}
-                          </span>
-                        </label>
-                      );
-                    })}
+                  <div className="mt-3 space-y-3">
+                    {/* Species Search Box */}
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Search Pokémon..."
+                        value={speciesSearchTerm}
+                        onChange={(e) => setSpeciesSearchTerm(e.target.value)}
+                        className="w-full px-3 py-2 pl-8 text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200"
+                      />
+                      <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                        <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      </div>
+                    </div>
+                    
+                    {/* Species List */}
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {filteredSpecies.length === 0 ? (
+                        <div className="text-sm text-gray-500 dark:text-gray-400 text-center py-2">
+                          {speciesSearchTerm ? 'No Pokémon found matching your search.' : 'No species in collection.'}
+                        </div>
+                      ) : (
+                        filteredSpecies.map(speciesNum => {
+                          const pokemonName = speciesMapping[speciesNum] || `#${speciesNum}`;
+                          return (
+                            <label key={speciesNum} className="flex items-center justify-between cursor-pointer">
+                              <div className="flex items-center">
+                                <input
+                                  type="checkbox"
+                                  checked={filters.species.includes(speciesNum)}
+                                  onChange={(e) => handleFilterChange('species', speciesNum, e.target.checked)}
+                                  className="mr-2 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                />
+                                <span className="text-sm text-gray-700 dark:text-gray-300">
+                                  {pokemonName}
+                                </span>
+                              </div>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                {filterCounts.species[speciesNum] || 0}
+                              </span>
+                            </label>
+                          );
+                        })
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
