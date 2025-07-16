@@ -27,6 +27,7 @@ function SetCardsPage({ set, onBack, onAdd, onRemove, collection }: {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [processingCards, setProcessingCards] = useState(new Set<string>());
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     if (!set) return;
@@ -45,6 +46,12 @@ function SetCardsPage({ set, onBack, onAdd, onRemove, collection }: {
   }, [set]);
 
   useImageCache(cards.map(card => card.images?.small));
+
+  // Filter cards based on search term
+  const filteredCards = cards.filter(card => 
+    !searchTerm || 
+    card.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleCardAction = async (card: Card, isAdd: boolean) => {
     const cardId = card.id;
@@ -113,60 +120,100 @@ function SetCardsPage({ set, onBack, onAdd, onRemove, collection }: {
             {error}
           </div>
         )}
-        
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
-          {cards.map(card => {
-            const isInCollection = collection.find(c => c.id === card.id);
-            const isProcessing = processingCards.has(card.id);
-            
-            return (
-              <div key={card.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col h-full">
-                <img 
-                  src={card.images.small} 
-                  alt={card.name} 
-                  className="w-full h-auto"
-                />
-                <div className="p-4 flex flex-col flex-grow">
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-3 flex-shrink-0">
-                    {card.name}
-                  </div>
-                  <div className="mt-auto">
-                    <button 
-                      onClick={() => handleCardAction(card, !isInCollection)}
-                      disabled={isProcessing}
-                      className={`w-full py-2 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
-                        isProcessing
-                          ? 'bg-gray-400 dark:bg-gray-600 text-gray-600 dark:text-gray-400 cursor-not-allowed'
-                          : isInCollection 
-                            ? 'bg-red-500 hover:bg-red-600 text-white' 
-                            : 'bg-green-500 hover:bg-green-600 text-white'
-                      }`}
-                    >
-                    {isProcessing ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-                    ) : (
-                      <svg 
-                        className="w-5 h-5" 
-                        viewBox="0 0 24 24" 
-                        fill="currentColor"
-                      >
-                        {isInCollection ? (
-                          // Minus circle icon
-                          <path fillRule="evenodd" clipRule="evenodd" d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM8 12C8 11.4477 8.44772 11 9 11H15C15.5523 11 16 11.4477 16 12C16 12.5523 15.5523 13 15 13H9C8.44772 13 8 12.5523 8 12Z" />
-                        ) : (
-                          // Plus circle icon
-                          <path fillRule="evenodd" clipRule="evenodd" d="M13 9C13 8.44772 12.5523 8 12 8C11.4477 8 11 8.44772 11 9V11H9C8.44772 11 8 11.4477 8 12C8 12.5523 8.44772 13 9 13H11V15C11 15.5523 11.4477 16 12 16C12.5523 16 13 15.5523 13 15V13H15C15.5523 13 16 12.5523 16 12C16 11.4477 15.5523 11 15 11H13V9ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12Z" />
-                        )}
-                      </svg>
-                    )}
-                    {isProcessing ? 'Processing...' : (isInCollection ? 'Remove' : 'Add')}
-                  </button>
-                  </div>
-                </div>
+
+        {/* Search Bar */}
+        {!loading && !error && (
+          <div className="mb-6">
+            <div className="relative max-w-md mx-auto">
+              <input
+                type="text"
+                placeholder="Search cards by name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-3 pl-10 pr-4 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200"
+              />
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
               </div>
-            );
-          })}
-        </div>
+            </div>
+            
+            {/* Search Results Info */}
+            {searchTerm && (
+              <div className="text-center mt-2">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {filteredCards.length} of {cards.length} cards matching "{searchTerm}"
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Cards Grid */}
+        {!loading && !error && (
+          <>
+            {filteredCards.length === 0 && searchTerm ? (
+              <div className="bg-blue-100 dark:bg-blue-900/50 border border-blue-400 dark:border-blue-600 text-blue-700 dark:text-blue-300 px-6 py-4 rounded-lg text-center text-lg">
+                No cards found matching "{searchTerm}". Try a different search term.
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+                {filteredCards.map(card => {
+                  const isInCollection = collection.find(c => c.id === card.id);
+                  const isProcessing = processingCards.has(card.id);
+                  
+                  return (
+                    <div key={card.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col h-full">
+                      <img 
+                        src={card.images.small} 
+                        alt={card.name} 
+                        className="w-full h-auto"
+                      />
+                      <div className="p-4 flex flex-col flex-grow">
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-3 flex-shrink-0">
+                          {card.name}
+                        </div>
+                        <div className="mt-auto">
+                          <button 
+                            onClick={() => handleCardAction(card, !isInCollection)}
+                            disabled={isProcessing}
+                            className={`w-full py-2 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+                              isProcessing
+                                ? 'bg-gray-400 dark:bg-gray-600 text-gray-600 dark:text-gray-400 cursor-not-allowed'
+                                : isInCollection 
+                                  ? 'bg-red-500 hover:bg-red-600 text-white' 
+                                  : 'bg-green-500 hover:bg-green-600 text-white'
+                            }`}
+                          >
+                          {isProcessing ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                          ) : (
+                            <svg 
+                              className="w-5 h-5" 
+                              viewBox="0 0 24 24" 
+                              fill="currentColor"
+                            >
+                              {isInCollection ? (
+                                // Minus circle icon
+                                <path fillRule="evenodd" clipRule="evenodd" d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM8 12C8 11.4477 8.44772 11 9 11H15C15.5523 11 16 11.4477 16 12C16 12.5523 15.5523 13 15 13H9C8.44772 13 8 12.5523 8 12Z" />
+                              ) : (
+                                // Plus circle icon
+                                <path fillRule="evenodd" clipRule="evenodd" d="M13 9C13 8.44772 12.5523 8 12 8C11.4477 8 11 8.44772 11 9V11H9C8.44772 11 8 11.4477 8 12C8 12.5523 8.44772 13 9 13H11V15C11 15.5523 11.4477 16 12 16C12.5523 16 13 15.5523 13 15V13H15C15.5523 13 16 12.5523 16 12C16 11.4477 15.5523 11 15 11H13V9ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12Z" />
+                              )}
+                            </svg>
+                          )}
+                          {isProcessing ? 'Processing...' : (isInCollection ? 'Remove' : 'Add')}
+                        </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
       </div>
       </div>
     </div>
