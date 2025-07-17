@@ -1,3 +1,6 @@
 .env
 node_modules/
 collection.db 
+/generated/prisma
+
+/generated/prisma
