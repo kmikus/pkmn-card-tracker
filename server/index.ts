@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
-import { Pool } from 'pg';
+import { PrismaClient } from '@prisma/client'
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import passport from 'passport';
@@ -11,6 +11,13 @@ interface User {
   id: string;
   displayName: string;
   email: string;
+}
+
+// Prisma types (matching actual database structure)
+type PrismaUser = {
+  id: string;
+  displayname: string | null;
+  email: string | null;
 }
 
 interface AuthenticatedRequest extends Request {
@@ -29,6 +36,7 @@ declare global {
 }
 
 const app = express();
+const prisma = new PrismaClient();
 
 const PORT = process.env.PORT || 4000;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
@@ -50,46 +58,6 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Initialize PostgreSQL database
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
-
-// Initialize database tables
-async function initializeDatabase() {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY,
-        displayName TEXT,
-        email TEXT
-      )
-    `);
-    
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS collection (
-        id TEXT,
-        userId TEXT,
-        name TEXT,
-        setName TEXT,
-        image TEXT,
-        data TEXT,
-        PRIMARY KEY (id, userId),
-        FOREIGN KEY (userId) REFERENCES users(id)
-      )
-    `);
-    
-    console.log('Database tables initialized successfully');
-  } catch (error) {
-    console.error('Error initializing database:', error);
-  }
-}
-
-initializeDatabase();
-
 // Passport config
 passport.serializeUser((user: User, done) => {
   done(null, user.id);
@@ -97,8 +65,18 @@ passport.serializeUser((user: User, done) => {
 
 passport.deserializeUser(async (id: string, done) => {
   try {
-    const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
-    done(null, result.rows[0]);
+    const user = await prisma.users.findUnique({
+      where: { id }
+    });
+    if (user) {
+      done(null, { 
+        id: user.id, 
+        displayName: user.displayname || '', 
+        email: user.email || '' 
+      });
+    } else {
+      done(null, null);
+    }
   } catch (err) {
     done(err);
   }
@@ -112,11 +90,16 @@ passport.use(new GoogleStrategy({
   console.log('GoogleStrategy profile:', profile);
   try {
     // Save user to DB if not exists
-    await pool.query(
-      'INSERT INTO users (id, displayName, email) VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING',
-      [profile.id, profile.displayName, profile.emails[0].value]
-    );
-    done(null, { id: profile.id, displayName: profile.displayName, email: profile.emails[0].value });
+    const user = await prisma.users.upsert({
+      where: { id: profile.id },
+      update: {},
+      create: {
+        id: profile.id,
+        displayname: profile.displayName,
+        email: profile.emails[0].value
+      }
+    });
+    done(null, { id: user.id, displayName: user.displayname, email: user.email });
   } catch (error) {
     done(error);
   }
@@ -183,21 +166,24 @@ app.get('/collection', requireAuth, async (req: AuthenticatedRequest, res: Respo
       res.status(401).json({ error: 'User not authenticated' });
       return;
     }
-    const result = await pool.query('SELECT * FROM collection WHERE userId = $1', [req.user.id]);
-    const cards = result.rows.map(row => {
-      const cardData = JSON.parse(row.data);
+    const cards = await prisma.collection.findMany({
+      where: { userid: req.user.id }
+    });
+    
+    const formattedCards = cards.map((card: any) => {
+      const cardData = JSON.parse(card.data || '{}');
       return {
-        id: row.id,
-        name: row.name,
+        id: card.id,
+        name: card.name,
         set: { 
-          id: cardData.set?.id || row.setname, // Use set ID from stored data, fallback to name
-          name: cardData.set?.name || row.setname 
+          id: cardData.set?.id || card.setname, // Use set ID from stored data, fallback to name
+          name: cardData.set?.name || card.setname 
         },
-        images: { small: row.image },
+        images: { small: card.image },
         ...cardData
       };
     });
-    res.json(cards);
+    res.json(formattedCards);
   } catch (error) {
     console.error('Error fetching collection:', error);
     res.status(500).json({ error: (error as Error).message });
@@ -212,10 +198,28 @@ app.post('/collection', requireAuth, async (req: AuthenticatedRequest, res: Resp
       return;
     }
     const card = req.body;
-    await pool.query(
-      'INSERT INTO collection (id, userId, name, setName, image, data) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (id, userId) DO UPDATE SET name = $3, setName = $4, image = $5, data = $6',
-      [card.id, req.user.id, card.name, card.set?.name || '', card.images?.small || '', JSON.stringify(card)]
-    );
+    await prisma.collection.upsert({
+      where: {
+        id_userid: {
+          id: card.id,
+          userid: req.user.id
+        }
+      },
+      update: {
+        name: card.name,
+        setname: card.set?.name || '',
+        image: card.images?.small || '',
+        data: JSON.stringify(card)
+      },
+      create: {
+        id: card.id,
+        userid: req.user.id,
+        name: card.name,
+        setname: card.set?.name || '',
+        image: card.images?.small || '',
+        data: JSON.stringify(card)
+      }
+    });
     res.json({ success: true });
   } catch (error) {
     console.error('Error adding card to collection:', error);
@@ -230,7 +234,12 @@ app.delete('/collection/:id', requireAuth, async (req: AuthenticatedRequest, res
       res.status(401).json({ error: 'User not authenticated' });
       return;
     }
-    await pool.query('DELETE FROM collection WHERE id = $1 AND userId = $2', [req.params.id, req.user.id]);
+    await prisma.collection.deleteMany({
+      where: {
+        id: req.params.id,
+        userid: req.user.id
+      }
+    });
     res.json({ success: true });
   } catch (error) {
     console.error('Error removing card from collection:', error);
@@ -246,4 +255,10 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 const port = typeof PORT === 'string' ? parseInt(PORT, 10) : PORT;
 app.listen(port, '0.0.0.0', () => {
   console.log(`Server running on http://0.0.0.0:${port}`);
+});
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  await prisma.$disconnect();
+  process.exit(0);
 }); 
