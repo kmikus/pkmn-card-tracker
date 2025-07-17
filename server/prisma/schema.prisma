@@ -9,13 +9,15 @@ datasource db {
 }
 
 model collection {
-  id      String
-  userid  String
-  name    String?
-  setname String?
-  image   String?
-  data    String?
-  users   users   @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id         String
+  userid     String
+  name       String?
+  setname    String?
+  image      String?
+  data       String?
+  created_at DateTime @default(now())
+  users      users    @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  card_tags  card_tags[]
 
   @@id([id, userid])
 }
@@ -30,5 +32,32 @@ model users {
   id          String       @id
   displayname String?
   email       String?
+  created_at  DateTime     @default(now())
   collection  collection[]
+  tags        tags[]
+}
+
+model tags {
+  id         Int        @id @default(autoincrement())
+  name       String
+  userid     String
+  color      String?    @default("#3B82F6")
+  created_at DateTime   @default(now())
+  user       users      @relation(fields: [userid], references: [id])
+  card_tags  card_tags[]
+
+  @@unique([name, userid])
+  @@map("tags")
+}
+
+model card_tags {
+  card_id    String
+  userid     String
+  tag_id     Int
+  created_at DateTime @default(now())
+  card       collection @relation(fields: [card_id, userid], references: [id, userid])
+  tag        tags       @relation(fields: [tag_id], references: [id])
+
+  @@id([card_id, userid, tag_id])
+  @@map("card_tags")
 }
