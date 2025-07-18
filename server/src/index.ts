@@ -1,12 +1,13 @@
 import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
-import { PrismaClient } from './generated/prisma';
+import { PrismaClient } from '../generated/prisma';
 import cors from 'cors';
 import passport from 'passport';
 
 // Import routes
 import authRoutes from './routes/auth';
 import collectionRoutes from './routes/collection';
+import tagRoutes from './routes/tags';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -33,6 +34,7 @@ app.use(passport.initialize());
 // Use routes
 app.use('/auth', authRoutes);
 app.use('/collection', collectionRoutes);
+app.use('/tags', tagRoutes);
 
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
