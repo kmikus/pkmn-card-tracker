@@ -5,6 +5,12 @@
 
 set -e
 
+# Load environment variables from .env file if it exists
+if [ -f ".env" ]; then
+    echo "📄 Loading environment variables from .env file..."
+    export $(cat .env | grep -v '^#' | xargs)
+fi
+
 # Configuration - Production database details
 PROD_HOST="dpg-d1k1d7a4d50c738mvsu0-a.oregon-postgres.render.com"
 PROD_PORT="5432"

@@ -5,7 +5,10 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "tsc --watch",
+    "dev": "npm run switch:dev && npm run build && npm start",
+    "dev:prod-db": "npm run switch:prod && npm run build && npm start",
+    "switch:dev": "cp .env.development .env",
+    "switch:prod": "if [ -z \"$PROD_PASSWORD\" ]; then echo '❌ PROD_PASSWORD not set. Set it with: export PROD_PASSWORD=\"your_password\"'; exit 1; fi && cat .env.production | sed \"s/<PASSWORD>/$PROD_PASSWORD/g\" > .env",
     "test": "echo \"Error: no test specified\" && exit 1",
     "test-db": "node dist/test-db.js"
   },

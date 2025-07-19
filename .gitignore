@@ -2,9 +2,14 @@
 node_modules/
 
 # Database backups
-backups/
+server/backups/
 *.sql
 *.sql.gz
 
 # Keep Prisma migrations (they should be version controlled)
-!prisma/migrations/ 
+!server/prisma/migrations/
+
+# Environment files (contain sensitive data)
+server/.env
+server/.env.development
+server/.env.production 

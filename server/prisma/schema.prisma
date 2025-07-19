@@ -8,6 +8,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Environment-specific configurations
+// Development: DATABASE_URL=postgresql://dev_user:dev_password@localhost:5432/pkmn_tracker_dev
+// Production: DATABASE_URL=postgresql://pkmn_card_tracker_db_user:<PASSWORD>@dpg-d1k1d7a4d50c738mvsu0-a.oregon-postgres.render.com/pkmn_card_tracker_db
+
 model collection {
   id         String
   userid     String

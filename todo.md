@@ -28,7 +28,7 @@ Restructure the database to separate card data from user collection data, enabli
    - Create `user_collection` entries from existing `collection` data
    - Migrate existing `card_tags` to reference new `cards` table
 
-- [ ] **Create TCG API utility for card population**
+- [x] **Create TCG API utility for card population**
    - Create TypeScript utility script to call Pokemon TCG API
    - Reference existing API call pattern from PokemonCardsPage.tsx
    - Use TCG_API_URL = 'https://api.pokemontcg.io/v2/cards'
@@ -36,7 +36,7 @@ Restructure the database to separate card data from user collection data, enabli
    - Utility should retrieve all current card information and write to new `cards` table
 
 ### Phase 2: Database Migration
-- [ ] **Create new Prisma schema**
+- [x] **Create new Prisma schema**
    - Add `cards` model
    - Add `user_collection` model
    - Update `card_tags` model to reference `cards`
