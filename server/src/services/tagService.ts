@@ -55,18 +55,15 @@ export class TagService {
       throw new Error(`Tag '${tagName}' not found`);
     }
 
-    // Check if the card exists
-    const card = await this.prisma.collection.findUnique({
+    // Check if the card exists in the cards table (not collection)
+    const card = await this.prisma.cards.findUnique({
       where: {
-        id_userid: {
-          id: cardId,
-          userid: userId
-        }
+        id: cardId
       }
     });
 
     if (!card) {
-      throw new Error('Card not found in collection');
+      throw new Error('Card not found in database');
     }
 
     // Add the tag to the card (upsert to avoid duplicates)

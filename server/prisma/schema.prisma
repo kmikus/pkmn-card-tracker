@@ -12,6 +12,34 @@ datasource db {
 // Development: DATABASE_URL=postgresql://dev_user:dev_password@localhost:5432/pkmn_tracker_dev
 // Production: DATABASE_URL=postgresql://pkmn_card_tracker_db_user:<PASSWORD>@dpg-d1k1d7a4d50c738mvsu0-a.oregon-postgres.render.com/pkmn_card_tracker_db
 
+// New cards table to store all card data (no user-specific data)
+model cards {
+  id              String          @id
+  name            String?
+  setname         String?
+  image           String?
+  data            String?         // JSON data from TCG API
+  created_at      DateTime        @default(now())
+  user_collection user_collection[]
+  card_tags       card_tags[]
+
+  @@map("cards")
+}
+
+// Junction table for user ownership of cards
+model user_collection {
+  userid      String
+  cardid      String
+  quantity    Int              @default(1)
+  added_at    DateTime         @default(now())
+  user        users            @relation(fields: [userid], references: [id], onDelete: Cascade)
+  card        cards            @relation(fields: [cardid], references: [id], onDelete: Cascade)
+
+  @@id([userid, cardid])
+  @@map("user_collection")
+}
+
+// Keep existing collection table for now (will be dropped after migration)
 model collection {
   id         String
   userid     String
@@ -21,7 +49,6 @@ model collection {
   data       String?
   created_at DateTime @default(now())
   users      users    @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  card_tags  card_tags[]
 
   @@id([id, userid])
 }
@@ -33,12 +60,13 @@ model test_table {
 }
 
 model users {
-  id          String       @id
-  displayname String?
-  email       String?
-  created_at  DateTime     @default(now())
-  collection  collection[]
-  tags        tags[]
+  id             String           @id
+  displayname    String?
+  email          String?
+  created_at     DateTime         @default(now())
+  collection     collection[]     // Old collection table
+  user_collection user_collection[] // New user_collection table
+  tags           tags[]
 }
 
 model tags {
@@ -54,13 +82,14 @@ model tags {
   @@map("tags")
 }
 
+// Updated card_tags to reference cards table instead of collection
 model card_tags {
   card_id    String
   userid     String
   tag_id     Int
   created_at DateTime @default(now())
-  card       collection @relation(fields: [card_id, userid], references: [id, userid])
-  tag        tags       @relation(fields: [tag_id], references: [id])
+  card       cards    @relation(fields: [card_id], references: [id], onDelete: Cascade)
+  tag        tags     @relation(fields: [tag_id], references: [id])
 
   @@id([card_id, userid, tag_id])
   @@map("card_tags")

@@ -12,12 +12,16 @@ export class CollectionService {
   }
 
   async getUserCollection(userId: string) {
-    const cards = await this.prisma.collection.findMany({
-      where: { userid: userId }
+    const userCollection = await this.prisma.user_collection.findMany({
+      where: { userid: userId },
+      include: {
+        card: true
+      }
     });
     
     const cardsWithTags = await Promise.all(
-      cards.map(async (card) => {
+      userCollection.map(async (userCard) => {
+        const card = userCard.card;
         const cardData = JSON.parse(card.data || '{}');
         const [isFavorited, isWishlisted] = await Promise.all([
           this.tagService.cardHasTag(userId, card.id, 'favorite'),
@@ -34,6 +38,7 @@ export class CollectionService {
           images: { small: card.image },
           favorited: isFavorited,
           wishlisted: isWishlisted,
+          quantity: userCard.quantity,
           ...cardData
         };
       })
@@ -43,13 +48,9 @@ export class CollectionService {
   }
 
   async addCardToCollection(userId: string, card: any) {
-    return await this.prisma.collection.upsert({
-      where: {
-        id_userid: {
-          id: card.id,
-          userid: userId
-        }
-      },
+    // First, ensure the card exists in the cards table
+    await this.prisma.cards.upsert({
+      where: { id: card.id },
       update: {
         name: card.name,
         setname: card.set?.name || '',
@@ -58,19 +59,38 @@ export class CollectionService {
       },
       create: {
         id: card.id,
-        userid: userId,
         name: card.name,
         setname: card.set?.name || '',
         image: card.images?.small || '',
         data: JSON.stringify(card)
       }
     });
+
+    // Then add to user's collection
+    return await this.prisma.user_collection.upsert({
+      where: {
+        userid_cardid: {
+          userid: userId,
+          cardid: card.id
+        }
+      },
+      update: {
+        quantity: {
+          increment: 1
+        }
+      },
+      create: {
+        userid: userId,
+        cardid: card.id,
+        quantity: 1
+      }
+    });
   }
 
   async removeCardFromCollection(userId: string, cardId: string) {
-    return await this.prisma.collection.deleteMany({
+    return await this.prisma.user_collection.deleteMany({
       where: {
-        id: cardId,
+        cardid: cardId,
         userid: userId
       }
     });
