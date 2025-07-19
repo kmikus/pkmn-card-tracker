@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Pokemon, Card } from '../types';
+import CardActionButtons from './CardActionButtons';
 
 const TCG_API_URL = 'https://api.pokemontcg.io/v2/cards';
 
@@ -23,6 +24,7 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }: {
   onRemove: (cardId: string) => Promise<void>;
   collection: Card[];
 }) {
+  const [tagProcessing, setTagProcessing] = useState(new Set<string>());
   const [cards, setCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +69,76 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }: {
     }
   };
 
+  const handleToggleFavorite = async (cardId: string) => {
+    setTagProcessing(prev => new Set(prev).add(`favorite-${cardId}`));
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) throw new Error('No token found');
+
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'}/tags/favorite/${cardId}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // Update the card's favorite status in the collection
+      const updatedCollection = collection.map(card => 
+        card.id === cardId 
+          ? { ...card, favorited: response.data.favorited }
+          : card
+      );
+      
+      // Update the cards list as well
+      setCards(prevCards => prevCards.map(card => 
+        card.id === cardId 
+          ? { ...card, favorited: response.data.favorited }
+          : card
+      ));
+
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    } finally {
+      setTagProcessing(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(`favorite-${cardId}`);
+        return newSet;
+      });
+    }
+  };
+
+  const handleToggleWishlist = async (cardId: string) => {
+    setTagProcessing(prev => new Set(prev).add(`wishlist-${cardId}`));
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) throw new Error('No token found');
+
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'}/tags/wishlist/${cardId}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // Update the card's wishlist status in the collection
+      const updatedCollection = collection.map(card => 
+        card.id === cardId 
+          ? { ...card, wishlisted: response.data.wishlisted }
+          : card
+      );
+      
+      // Update the cards list as well
+      setCards(prevCards => prevCards.map(card => 
+        card.id === cardId 
+          ? { ...card, wishlisted: response.data.wishlisted }
+          : card
+      ));
+
+    } catch (error) {
+      console.error('Error toggling wishlist:', error);
+    } finally {
+      setTagProcessing(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(`wishlist-${cardId}`);
+        return newSet;
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-200">
       <div className="sticky top-0 z-10 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 pt-4 pb-2 px-4 border-b border-gray-200/50 dark:border-gray-700/50">
@@ -106,7 +178,7 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }: {
         
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
           {cards.map(card => {
-            const isInCollection = collection.find(c => c.id === card.id);
+            const isInCollection = !!collection.find(c => c.id === card.id);
             const isProcessing = processingCards.has(card.id);
             
             return (
@@ -121,36 +193,15 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }: {
                     {card.set.name}
                   </div>
                   <div className="mt-auto">
-                    <button 
-                      onClick={() => handleCardAction(card, !isInCollection)}
-                      disabled={isProcessing}
-                      className={`w-full py-2 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
-                        isProcessing
-                          ? 'bg-gray-400 dark:bg-gray-600 text-gray-600 dark:text-gray-400 cursor-not-allowed'
-                          : isInCollection 
-                            ? 'bg-red-500 hover:bg-red-600 text-white' 
-                            : 'bg-green-500 hover:bg-green-600 text-white'
-                      }`}
-                    >
-                    {isProcessing ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-                    ) : (
-                      <svg 
-                        className="w-5 h-5" 
-                        viewBox="0 0 24 24" 
-                        fill="currentColor"
-                      >
-                        {isInCollection ? (
-                          // Minus circle icon
-                          <path fillRule="evenodd" clipRule="evenodd" d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM8 12C8 11.4477 8.44772 11 9 11H15C15.5523 11 16 11.4477 16 12C16 12.5523 15.5523 13 15 13H9C8.44772 13 8 12.5523 8 12Z" />
-                        ) : (
-                          // Plus circle icon
-                          <path fillRule="evenodd" clipRule="evenodd" d="M13 9C13 8.44772 12.5523 8 12 8C11.4477 8 11 8.44772 11 9V11H9C8.44772 11 8 11.4477 8 12C8 12.5523 8.44772 13 9 13H11V15C11 15.5523 11.4477 16 12 16C12.5523 16 13 15.5523 13 15V13H15C15.5523 13 16 12.5523 16 12C16 11.4477 15.5523 11 15 11H13V9ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12Z" />
-                        )}
-                      </svg>
-                    )}
-                    {isProcessing ? 'Processing...' : (isInCollection ? 'Remove' : 'Add')}
-                  </button>
+                    <CardActionButtons
+                      card={card}
+                      isInCollection={isInCollection}
+                      isProcessing={isProcessing}
+                      onAdd={onAdd}
+                      onRemove={onRemove}
+                      onToggleFavorite={handleToggleFavorite}
+                      onToggleWishlist={handleToggleWishlist}
+                    />
                   </div>
                 </div>
               </div>

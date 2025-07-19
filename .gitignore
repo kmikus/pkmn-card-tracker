@@ -1,2 +1,10 @@
 .env
-node_modules/ 
+node_modules/
+
+# Database backups
+backups/
+*.sql
+*.sql.gz
+
+# Keep Prisma migrations (they should be version controlled)
+!prisma/migrations/ 

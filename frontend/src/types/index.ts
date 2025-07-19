@@ -26,6 +26,9 @@ export interface Card {
   types?: string[];
   rarity?: string;
   nationalPokedexNumbers?: number[];
+  // Tag properties
+  favorited?: boolean;
+  wishlisted?: boolean;
 }
 
 export interface CardSet {
