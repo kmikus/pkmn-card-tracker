@@ -20,7 +20,7 @@ function App() {
   const [collection, setCollection] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user, loading: authLoading, fetchUser, api } = useAuth();
+  const { user, loading: authLoading, fetchUser, logout, api } = useAuth();
   const navigate = useNavigate();
 
   // Fetch collection from backend or localStorage
@@ -117,10 +117,16 @@ function App() {
 
   const handleLogout = async () => {
     try {
+      // Call logout API (optional, for server-side cleanup if needed)
       await api.post('/auth/logout');
-      navigate('/');
     } catch (err) {
-      console.error('Logout error:', err);
+      console.error('Logout API error:', err);
+      // Continue with logout even if API call fails
+    } finally {
+      // Clear local state and storage
+      logout();
+      setCollection([]); // Clear collection state
+      navigate('/');
     }
   };
 

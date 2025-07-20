@@ -21,7 +21,7 @@ function isAuthenticated(): boolean {
   return !!localStorage.getItem('authToken');
 }
 
-// Guest user storage (localStorage)
+// Guest user storage (localStorage) - stores minimal card data to save space
 const GUEST_COLLECTION_KEY = 'guestCardCollection';
 
 function saveGuestCollection(collection: any[]): boolean {
@@ -55,7 +55,17 @@ function addCardToGuestCollection(card: any): boolean {
   const collection = loadGuestCollection();
   const exists = collection.find(c => c.id === card.id);
   if (!exists) {
-    collection.push(card);
+    // Store only essential card data for guest users
+    const guestCard = {
+      id: card.id,
+      name: card.name,
+      images: { small: card.images?.small || '' },
+      set: { 
+        id: card.set?.id || '', 
+        name: card.set?.name || '' 
+      }
+    };
+    collection.push(guestCard);
     return saveGuestCollection(collection);
   }
   return true;
@@ -78,7 +88,17 @@ function clearGuestCollection(): boolean {
 // Authenticated user storage (API)
 async function saveCollection(collection: any[]): Promise<boolean> {
   if (!isAuthenticated()) {
-    return saveGuestCollection(collection);
+    // For guest users, trim the data before saving
+    const trimmedCollection = collection.map(card => ({
+      id: card.id,
+      name: card.name,
+      images: { small: card.images?.small || '' },
+      set: { 
+        id: card.set?.id || '', 
+        name: card.set?.name || '' 
+      }
+    }));
+    return saveGuestCollection(trimmedCollection);
   }
   
   try {

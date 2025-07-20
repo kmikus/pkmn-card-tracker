@@ -51,6 +51,11 @@ function useAuth() {
     }, 100);
   }, [fetchUser]);
 
+  const logout = useCallback(() => {
+    localStorage.removeItem('authToken');
+    setUser(null);
+  }, []);
+
   // Check for token in URL (from OAuth redirect)
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -65,7 +70,7 @@ function useAuth() {
     }
   }, [location.search, fetchUser, fetchUserWithRetry]);
 
-  return { user, loading, fetchUser, fetchUserWithRetry, api };
+  return { user, loading, fetchUser, fetchUserWithRetry, logout, api };
 }
 
 export default useAuth; 

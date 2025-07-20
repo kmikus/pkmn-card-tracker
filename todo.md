@@ -147,6 +147,29 @@ The database restructuring has been successfully completed! The logical error wh
 - **Manage their collection** with the new structure
 - **See tag status** on all cards
 
+## 🚨 CRITICAL ISSUES TO ADDRESS
+
+### 1. Logout Functionality Broken ❌
+- [ ] **Fix logout button** - Currently not working in local development
+- [ ] **Investigate auth flow** - Check if logout endpoint is properly configured
+- [ ] **Test authentication state** - Verify user state is properly cleared on logout
+- [ ] **Check localStorage cleanup** - Ensure auth tokens are removed on logout
+
+### 2. Local Storage vs Database Sync Issue ❌
+- [ ] **Handle guest users** - Users without accounts can use localStorage but this creates sync issues
+- [ ] **Account creation flow** - When guest users create accounts, need to migrate localStorage data to database
+- [ ] **Data consistency** - Ensure localStorage and database data don't conflict
+- [ ] **Future app compatibility** - Plan for mobile app that will also use local storage
+- [ ] **Migration strategy** - Create flow to move localStorage collection to user account
+
+### 3. Production Database Migration ❌
+- [ ] **Backup production database** - Create full backup before migration
+- [ ] **Run migration scripts** - Apply all development migrations to production
+- [ ] **Populate production cards table** - Run TCG API population script on production
+- [ ] **Verify data integrity** - Ensure all production data is preserved
+- [ ] **Test production endpoints** - Verify all functionality works in production
+- [ ] **Monitor performance** - Watch for any performance issues post-migration
+
 ## Next Steps (Optional Enhancements)
 
 ### Potential Improvements
@@ -192,4 +215,48 @@ The database restructuring has been successfully completed! The logical error wh
 - **Cards populated**: 19,500+ from Pokemon TCG API
 - **Sets covered**: 168 different card sets
 - **Data migrated**: All existing user collections and tags
-- **Errors resolved**: 0 data loss, all functionality preserved 
+- **Errors resolved**: 0 data loss, all functionality preserved
+
+## 🔧 IMPORTANT CONTEXT FOR NEXT AI AGENT
+
+### Current Architecture
+- **Frontend**: React + TypeScript + Vite (localhost:5173)
+- **Backend**: Node.js + Express + TypeScript + Prisma (localhost:4000)
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: JWT tokens stored in localStorage
+- **Data Storage**: Database for logged-in users, localStorage for guests
+
+### Key Files & Locations
+- **Server entry**: `server/src/index.ts` (not `server/index.ts`)
+- **Prisma schema**: `server/prisma/schema.prisma`
+- **Database scripts**: `server/db-scripts/` directory
+- **Frontend components**: `frontend/src/components/`
+- **API configuration**: Uses `import.meta.env.VITE_BACKEND_URL` or defaults to `http://localhost:4000`
+
+### Recent UI Changes
+- **CardActionButtons**: Conditional rendering based on page context
+  - Collection page: Shows favorite button (⭐), hides wishlist
+  - Sets/Pokemon pages: Shows wishlist button (🔖), hides favorite
+- **Colors**: Favorite uses `#FFD700` (gold), Wishlist uses `#FF69B4` (pink)
+- **Icons**: Wishlist uses bookmark icon, favorite uses star icon
+
+### Known Issues
+1. **Logout broken**: Auth flow needs investigation
+2. **Local storage sync**: Guest users vs logged-in users data conflict
+3. **Production migration**: Not yet performed
+
+### Development Environment
+- **Database**: PostgreSQL via Docker Compose (`docker-compose.yml`)
+- **Scripts available**: 
+  - `npm run populate-cards` - Populate cards from TCG API
+  - `npm run dev` - Development with dev database
+  - `npm run dev:prod-db` - Development with production database
+- **Backup scripts**: `server/db-scripts/backup-prod-docker.sh`
+
+### Testing Status
+- ✅ Database migration completed in development
+- ✅ Tag functionality working (favorite/wishlist)
+- ✅ UI conditional rendering working
+- ❌ Logout functionality broken
+- ❌ Guest user data sync not tested
+- ❌ Production migration not performed 

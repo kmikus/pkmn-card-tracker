@@ -82,7 +82,7 @@ router.get('/google/callback', (req, res, next) => {
   res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}?token=${token}`);
 });
 
-router.get('/logout', (req, res) => {
+router.post('/logout', (req, res) => {
   res.json({ success: true });
 });
 
