@@ -54,13 +54,13 @@ const CardActionButtons: React.FC<CardActionButtonsProps> = ({
   };
 
   return (
-    <div className="flex gap-2 w-full">
+    <div className="flex gap-1 sm:gap-2 w-full">
       {/* Favorite Button - Only show on collection page */}
       {showFavorite && (
         <button
           onClick={handleFavoriteToggle}
           disabled={isFavoriteProcessing}
-          className={`flex-shrink-0 p-2 rounded-lg transition-all duration-200 ${
+          className={`flex-shrink-0 p-1.5 sm:p-2 rounded-lg transition-all duration-200 ${
             isFavoriteProcessing
               ? 'bg-gray-400 dark:bg-gray-600 text-gray-600 dark:text-gray-400 cursor-not-allowed'
               : card.favorited
@@ -88,7 +88,7 @@ const CardActionButtons: React.FC<CardActionButtonsProps> = ({
         <button
           onClick={handleWishlistToggle}
           disabled={isWishlistProcessing}
-          className={`flex-shrink-0 p-2 rounded-lg transition-all duration-200 ${
+          className={`flex-shrink-0 p-1.5 sm:p-2 rounded-lg transition-all duration-200 ${
             isWishlistProcessing
               ? 'bg-gray-400 dark:bg-gray-600 text-gray-600 dark:text-gray-400 cursor-not-allowed'
               : card.wishlisted
@@ -121,7 +121,7 @@ const CardActionButtons: React.FC<CardActionButtonsProps> = ({
       <button
         onClick={() => handleCardAction(!isInCollection)}
         disabled={isProcessing}
-        className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+        className={`flex-1 py-1.5 sm:py-2 px-2 sm:px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm ${
           isProcessing
             ? 'bg-gray-400 dark:bg-gray-600 text-gray-600 dark:text-gray-400 cursor-not-allowed'
             : isInCollection

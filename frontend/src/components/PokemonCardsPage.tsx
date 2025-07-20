@@ -211,23 +211,23 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }: {
           </div>
         )}
         
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-6">
           {filteredCards.map(card => {
             const isInCollection = !!collection.find(c => c.id === card.id);
             const isProcessing = processingCards.has(card.id);
             
             return (
-              <div key={card.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col h-full">
+              <div key={card.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col h-full min-h-[280px]">
                 <img 
                   src={card.images.small} 
                   alt={card.name} 
-                  className="w-full h-auto"
+                  className="w-full h-auto flex-shrink-0"
                 />
-                <div className="p-4 flex flex-col flex-grow">
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-3 flex-shrink-0">
+                <div className="p-3 flex flex-col flex-grow min-h-0">
+                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-2 flex-shrink-0 line-clamp-2">
                     {card.set.name}
                   </div>
-                  <div className="mt-auto">
+                  <div className="mt-auto flex-shrink-0">
                     <CardActionButtons
                       card={card}
                       isInCollection={isInCollection}
