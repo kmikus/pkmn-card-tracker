@@ -1,5 +1,41 @@
 # Changelog
 
+## [v0.9.0] - Database restructuring and localStorage optimization
+### Added
+- Complete database restructuring with new `cards` and `user_collection` tables
+- 19,500+ Pokemon cards populated from Pokemon TCG API
+- Optimized localStorage for guest users (67% data size reduction)
+- Fixed logout functionality with proper state management
+- Enhanced tag system that works with any card (owned or not)
+
+### Changed
+- Migrated from single `collection` table to normalized database structure
+- Updated all backend services to use new database schema
+- Improved guest user experience with minimal localStorage data
+- Enhanced authentication flow with proper logout handling
+- Updated frontend to work with new data structure
+
+### Technical
+- Added Prisma migrations for database restructuring
+- Implemented TCG API population script with retry logic
+- Updated CollectionService and TagService for new schema
+- Fixed TypeScript build issues for production deployment
+- Added comprehensive deployment checklist and rollback procedures
+
+---
+
+## [v0.8.0] - Pre-migration stable version
+### Added
+- Stable checkpoint before database restructuring
+- Backup and rollback procedures for production deployment
+- Database migration scripts and utilities
+
+### Technical
+- Tagged stable version for rollback purposes
+- Prepared for major database schema changes
+
+---
+
 ## [v0.7.0] - Set browsing functionality and UI improvements
 ### Added
 - Complete set browsing functionality with dedicated SetsPage component

@@ -35,3 +35,9 @@
 - User handles their own deployments
 - Don't run deployment commands unless specifically asked
 - Focus on code changes and fixes, not deployment execution
+
+## Version Management
+- When creating new git tags, always update CHANGELOG.md
+- Include version number, date, and comprehensive change list
+- Follow the existing changelog format and structure
+- Document all major features, changes, and technical improvements
