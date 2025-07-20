@@ -1,0 +1,37 @@
+# Cursor AI Instructions for pkmn-card-tracker
+
+## Server Management
+- Don't run npm run dev or npm start unless specifically asked
+- User manages their own frontend and backend servers
+- Only run servers when asked to check for errors
+- Assume user will start/stop servers themselves
+
+## Directory Awareness
+- Always check current directory before running commands
+- Navigate to server/ or frontend/ as needed for project-specific commands
+- Use relative paths when possible
+- Remember this is a monorepo with separate server/ and frontend/ directories
+
+## Database Inspection
+- Don't use npx prisma studio
+- Use direct SQL queries or ask user preference
+- Don't suggest Prisma Studio for data verification
+- Use database scripts or direct queries for data inspection
+
+## Project Structure
+- This is a monorepo with separate server/ and frontend/ directories
+- Server code is in server/ directory
+- Frontend code is in frontend/ directory
+- Database scripts are in server/db-scripts/
+- Prisma schema is in server/prisma/
+
+## Environment Management
+- User manages their own .env files (development vs production)
+- Don't assume environment variables are set
+- Ask user to set environment variables when needed
+- User copies .env.development or .env.production to .env as needed
+
+## Deployment
+- User handles their own deployments
+- Don't run deployment commands unless specifically asked
+- Focus on code changes and fixes, not deployment execution
