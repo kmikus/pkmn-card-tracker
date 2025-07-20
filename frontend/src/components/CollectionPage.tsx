@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { CollectionPageProps, Card } from '../types';
 import { usePokemonCache } from '../hooks/usePokemonCache';
 import FilterPanel, { FilterState } from './FilterPanel';
+import CardActionButtons from './CardActionButtons';
 
 // Image cache hook
 function useImageCache(urls: string[]) {
@@ -16,7 +17,7 @@ function useImageCache(urls: string[]) {
   }, [urls]);
 }
 
-function CollectionPage({ collection, onRemove, user, onLogout }: CollectionPageProps) {
+function CollectionPage({ collection, onRemove, onToggleFavorite, onToggleWishlist, user, onLogout }: CollectionPageProps) {
   const [removingCards, setRemovingCards] = useState(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<FilterState>({
@@ -211,17 +212,17 @@ function CollectionPage({ collection, onRemove, user, onLogout }: CollectionPage
                     <div className="text-sm text-gray-600 dark:text-gray-400 mb-2 truncate">
                       {card.set.name}
                     </div>
-                    <button 
-                      onClick={() => handleRemoveCard(card.id)}
-                      disabled={removingCards.has(card.id)}
-                      className={`w-full py-2 px-3 rounded-md text-sm font-medium transition-colors duration-200 ${
-                        removingCards.has(card.id)
-                          ? 'bg-gray-400 dark:bg-gray-600 text-gray-600 dark:text-gray-400 cursor-not-allowed'
-                          : 'bg-red-600 hover:bg-red-700 text-white'
-                      }`}
-                    >
-                      {removingCards.has(card.id) ? 'Removing...' : 'Remove'}
-                    </button>
+                    <CardActionButtons
+                      card={card}
+                      isInCollection={true}
+                      isProcessing={removingCards.has(card.id)}
+                      showFavorite={true}
+                      showWishlist={false}
+                      onAdd={() => Promise.resolve()}
+                      onRemove={handleRemoveCard}
+                      onToggleFavorite={onToggleFavorite}
+                      onToggleWishlist={onToggleWishlist}
+                    />
                   </div>
                 </div>
               ))}

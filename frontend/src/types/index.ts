@@ -62,6 +62,8 @@ export interface AuthBarProps {
 export interface CollectionPageProps {
   collection: Card[];
   onRemove: (cardId: string) => Promise<void>;
+  onToggleFavorite: (cardId: string) => Promise<void>;
+  onToggleWishlist: (cardId: string) => Promise<void>;
   user: User | null;
   onLogout: () => void;
 }

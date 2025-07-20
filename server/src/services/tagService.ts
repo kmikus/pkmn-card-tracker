@@ -10,8 +10,8 @@ export class TagService {
   // Ensure default tags exist for a user
   async ensureDefaultTags(userId: string) {
     const defaultTags = [
-      { name: 'favorite', color: '#EF4444' },
-      { name: 'wishlist', color: '#10B981' }
+      { name: 'favorite', color: '#FFD700' },
+      { name: 'wishlist', color: '#FF69B4' }
     ];
 
     for (const tag of defaultTags) {

@@ -251,6 +251,8 @@ function SetCardsPage({ set, onBack, onAdd, onRemove, collection }: {
                             card={card}
                             isInCollection={isInCollection}
                             isProcessing={isProcessing}
+                            showFavorite={false}
+                            showWishlist={true}
                             onAdd={onAdd}
                             onRemove={onRemove}
                             onToggleFavorite={handleToggleFavorite}

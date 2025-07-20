@@ -75,6 +75,46 @@ function App() {
     }
   };
 
+  const handleToggleFavorite = async (cardId: string) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) throw new Error('No token found');
+
+      const response = await api.post(`/tags/favorite/${cardId}`);
+      
+      // Update the card's favorite status in the collection
+      setCollection(prev => prev.map(card => 
+        card.id === cardId 
+          ? { ...card, favorited: response.data.favorited }
+          : card
+      ));
+
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      setError('Failed to toggle favorite');
+    }
+  };
+
+  const handleToggleWishlist = async (cardId: string) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) throw new Error('No token found');
+
+      const response = await api.post(`/tags/wishlist/${cardId}`);
+      
+      // Update the card's wishlist status in the collection
+      setCollection(prev => prev.map(card => 
+        card.id === cardId 
+          ? { ...card, wishlisted: response.data.wishlisted }
+          : card
+      ));
+
+    } catch (error) {
+      console.error('Error toggling wishlist:', error);
+      setError('Failed to toggle wishlist');
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await api.post('/auth/logout');
@@ -141,7 +181,14 @@ function App() {
           )
         } />
         <Route path="/collection" element={
-          <CollectionPage collection={collection} onRemove={removeFromCollection} user={user} onLogout={handleLogout} />
+          <CollectionPage 
+            collection={collection} 
+            onRemove={removeFromCollection} 
+            onToggleFavorite={handleToggleFavorite}
+            onToggleWishlist={handleToggleWishlist}
+            user={user} 
+            onLogout={handleLogout} 
+          />
         } />
       </Routes>
     </div>
