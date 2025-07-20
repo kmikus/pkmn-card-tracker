@@ -41,3 +41,9 @@
 - Include version number, date, and comprehensive change list
 - Follow the existing changelog format and structure
 - Document all major features, changes, and technical improvements
+
+## TODO Management
+- Keep TODO.md checkboxes high-level and concise
+- Avoid verbose descriptions unless specifically requested
+- Focus on actionable items and clear objectives
+- Use TODO.md to track upcoming goals and improvements
