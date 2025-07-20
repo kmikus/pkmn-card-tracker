@@ -29,6 +29,7 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }: {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [processingCards, setProcessingCards] = useState(new Set<string>());
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     if (!pokemon) return;
@@ -49,6 +50,13 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }: {
   }, [pokemon]);
 
   useImageCache(cards.map(card => card.images?.small));
+
+  // Filter cards by set name
+  const filteredCards = cards.filter(card => {
+    if (!searchTerm) return true;
+    const searchLower = searchTerm.toLowerCase();
+    return card.set.name.toLowerCase().includes(searchLower);
+  });
 
   const handleCardAction = async (card: Card, isAdd: boolean) => {
     const cardId = card.id;
@@ -164,6 +172,27 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }: {
       <div className="p-4">
         <div className="max-w-6xl mx-auto">
         
+        {/* Search Box */}
+        <div className="flex justify-center mb-6">
+          <div className="relative w-full sm:w-96">
+            <input
+              type="text"
+              placeholder="Search by set name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-3 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none transition-colors duration-200 w-full placeholder-gray-500 dark:placeholder-gray-400"
+            />
+            <svg 
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </div>
+        
         {loading && (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
@@ -176,8 +205,14 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }: {
           </div>
         )}
         
+        {searchTerm && filteredCards.length === 0 && !loading && (
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            No cards found in set "{searchTerm}"
+          </div>
+        )}
+        
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
-          {cards.map(card => {
+          {filteredCards.map(card => {
             const isInCollection = !!collection.find(c => c.id === card.id);
             const isProcessing = processingCards.has(card.id);
             
