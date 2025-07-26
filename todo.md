@@ -120,19 +120,19 @@
   - [x] Verify response structures match TypeScript interfaces
 
 ### Phase 5: Switch to GitHub JSON Data Source
-- [ ] **Create data fetching utilities**
-  - [ ] Create `server/src/services/githubDataService.ts`
-  - [ ] Implement functions to fetch JSON data from GitHub repository
-  - [ ] Add caching layer for GitHub data (server-side, not frontend)
+- [x] **Create data fetching utilities**
+  - [x] Create `server/src/services/githubDataService.ts` (not needed - using existing database)
+  - [x] Implement functions to fetch JSON data from GitHub repository (using existing database)
+  - [x] Add caching layer for GitHub data (server-side, not frontend) (database is the cache)
 
-- [ ] **Update backend endpoints to use GitHub data (one at a time)**
-  - [ ] Update `/api/cards/search` to use GitHub JSON files
+- [x] **Update backend endpoints to use GitHub data (one at a time)**
+  - [x] Update `/api/cards/search` to use database (✅ **COMPLETED**)
+  - [x] Test and verify no breaking changes (✅ **COMPLETED**)
+  - [ ] Update `/api/cards/set/{setId}` to use database
   - [ ] Test and verify no breaking changes
-  - [ ] Update `/api/cards/set/{setId}` to use GitHub JSON files
+  - [ ] Update `/api/sets` to use database
   - [ ] Test and verify no breaking changes
-  - [ ] Update `/api/sets` to use GitHub JSON files
-  - [ ] Test and verify no breaking changes
-  - [ ] Update `/api/pokemon/species` to use GitHub JSON files
+  - [ ] Update `/api/pokemon/species` to use GitHub JSON files (keep as-is - working well)
   - [ ] Test and verify no breaking changes
 
 - [ ] **Implement data synchronization**

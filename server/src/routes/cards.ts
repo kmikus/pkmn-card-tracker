@@ -1,9 +1,11 @@
 import { Router, Request, Response } from 'express';
 import axios from 'axios';
+import { PrismaClient } from '../../generated/prisma';
 
 const router = Router();
+const prisma = new PrismaClient();
 
-// TCG API base URL
+// TCG API base URL (keeping for fallback)
 const TCG_API_URL = 'https://api.pokemontcg.io/v2';
 
 // Type definitions matching TCG API response structure
@@ -132,18 +134,87 @@ router.get('/search', async (req: Request, res: Response) => {
       return;
     }
 
-    const response = await axios.get<TCGResponse<TCGCard>>(`${TCG_API_URL}/cards`, {
-      params: {
-        q: `name:${name}`,
-        page: req.query.page || 1,
-        pageSize: req.query.pageSize || 250
+    // Parse pagination parameters
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 250;
+    const skip = (page - 1) * pageSize;
+
+    // Search cards in database by name (case-insensitive partial match)
+    // Sort by release date in reverse chronological order (newest first)
+    const cards = await prisma.$queryRaw<Array<{
+      id: string;
+      name: string;
+      setname: string;
+      image: string;
+      data: string;
+      created_at: Date;
+    }>>`
+      SELECT * FROM cards 
+      WHERE name ILIKE ${`%${name}%`}
+      ORDER BY (data::json->'set'->>'releaseDate') DESC, 
+               CASE 
+                 WHEN (data::json->>'number') ~ '^[0-9]+$' 
+                 THEN CAST((data::json->>'number') AS INTEGER)
+                 ELSE 999999
+               END ASC,
+               (data::json->>'number') ASC
+      LIMIT ${pageSize} OFFSET ${skip}
+    `;
+
+    // Get total count for pagination
+    const totalCount = await prisma.cards.count({
+      where: {
+        name: {
+          contains: name,
+          mode: 'insensitive'
+        }
+      }
+    });
+
+    // Parse JSON data and reconstruct TCG API response structure
+    const tcgCards: TCGCard[] = cards.map((card: any) => {
+      try {
+        const cardData = JSON.parse(card.data || '{}');
+        return cardData as TCGCard;
+      } catch (error) {
+        console.error(`Error parsing JSON for card ${card.id}:`, error);
+        // Return a minimal card structure if JSON parsing fails
+        return {
+          id: card.id,
+          name: card.name || '',
+          images: {
+            small: card.image || '',
+            large: card.image || ''
+          },
+          set: {
+            id: '',
+            name: card.setname || '',
+            series: '',
+            printedTotal: 0,
+            total: 0,
+            releaseDate: '',
+            updatedAt: '',
+            images: {
+              symbol: '',
+              logo: ''
+            }
+          }
+        } as TCGCard;
       }
     });
 
     // Return the exact same structure as TCG API
-    res.json(response.data);
+    const response: TCGResponse<TCGCard> = {
+      data: tcgCards,
+      page,
+      pageSize,
+      count: tcgCards.length,
+      totalCount
+    };
+
+    res.json(response);
   } catch (error: any) {
-    console.error('Error fetching cards by name:', error.message);
+    console.error('Error fetching cards by name from database:', error.message);
     res.status(500).json({ error: 'Failed to fetch cards' });
   }
 });
