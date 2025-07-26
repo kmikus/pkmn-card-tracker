@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { Card } from '../types';
-import { usePokemonCache } from '../hooks/usePokemonCache';
+import { Card, Pokemon } from '../types';
 
 interface FilterPanelProps {
   collection: Card[];
+  pokemonList: Pokemon[];
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
   isOpen: boolean;
@@ -19,6 +19,7 @@ export interface FilterState {
 
 const FilterPanel: React.FC<FilterPanelProps> = ({
   collection,
+  pokemonList,
   filters,
   onFiltersChange,
   isOpen,
@@ -26,12 +27,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 }) => {
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [speciesSearchTerm, setSpeciesSearchTerm] = useState('');
-  const { pokemonList } = usePokemonCache();
 
   // Create a mapping from Pokédex number to Pokémon name
   const speciesMapping = useMemo(() => {
     const mapping: Record<number, string> = {};
-    pokemonList.forEach(pokemon => {
+    pokemonList.forEach((pokemon: Pokemon) => {
       const pokedexNumber = parseInt(pokemon.id);
       if (!isNaN(pokedexNumber)) {
         mapping[pokedexNumber] = pokemon.displayName;

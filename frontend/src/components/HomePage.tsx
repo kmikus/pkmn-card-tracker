@@ -1,19 +1,42 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { usePokemonCache } from '../hooks/usePokemonCache';
+import axios from 'axios';
 import { Pokemon } from '../types';
 
 function HomePage({ onSelectPokemon }: { onSelectPokemon: (p: Pokemon) => void }) {
   const [searchTerm, setSearchTerm] = useState('');
-  const { pokemonList, loading, error, loadedImages, preloadImages } = usePokemonCache();
+  const [pokemonList, setPokemonList] = useState<Pokemon[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [localLoadedImages, setLocalLoadedImages] = useState(new Set<string>());
 
-  // Preload first 50 images on mount
+  // Fetch Pokémon species data
   useEffect(() => {
-    if (pokemonList.length > 0) {
-      preloadImages(0, 50);
-    }
-  }, [pokemonList.length, preloadImages]);
+    const fetchPokemonSpecies = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get('https://pokeapi.co/api/v2/pokemon-species?limit=1008');
+        const results = response.data.results.map((p: any) => {
+          // Extract the species number from the URL
+          const match = p.url.match(/\/pokemon-species\/(\d+)\//);
+          const id = match ? match[1] : '';
+          return {
+            name: p.name,
+            id,
+            image: id ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png` : '',
+            displayName: p.name.charAt(0).toUpperCase() + p.name.slice(1).replace(/-/g, ' '),
+          };
+        });
+        setPokemonList(results);
+      } catch (err) {
+        setError('Failed to fetch Pokémon species list');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPokemonSpecies();
+  }, []);
 
   // Handle individual image load
   const handleImageLoad = (imageUrl: string) => {
@@ -21,7 +44,7 @@ function HomePage({ onSelectPokemon }: { onSelectPokemon: (p: Pokemon) => void }
   };
 
   // Filter Pokémon based on search term
-  const filteredPokemon = pokemonList.filter(pokemon => {
+  const filteredPokemon = pokemonList.filter((pokemon: Pokemon) => {
     const displayName = pokemon.displayName || pokemon.name;
     const searchLower = searchTerm.toLowerCase();
     return displayName.toLowerCase().includes(searchLower) ||
@@ -82,7 +105,7 @@ function HomePage({ onSelectPokemon }: { onSelectPokemon: (p: Pokemon) => void }
         
         {/* Flexbox layout for Pokémon tiles */}
         <div className="flex flex-wrap justify-center items-center gap-8">
-          {filteredPokemon.map(p => {
+          {filteredPokemon.map((p: Pokemon) => {
             const displayName = p.displayName || p.name;
             return (
               <div 

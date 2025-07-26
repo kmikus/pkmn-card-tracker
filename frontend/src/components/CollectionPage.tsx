@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CollectionPageProps, Card } from '../types';
-import { usePokemonCache } from '../hooks/usePokemonCache';
+import axios from 'axios';
+import { CollectionPageProps, Card, Pokemon } from '../types';
 import FilterPanel, { FilterState } from './FilterPanel';
 import CardActionButtons from './CardActionButtons';
 
@@ -27,7 +27,32 @@ function CollectionPage({ collection, onRemove, onToggleFavorite, onToggleWishli
     species: []
   });
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
-  const { pokemonList } = usePokemonCache();
+  const [pokemonList, setPokemonList] = useState<Pokemon[]>([]);
+
+  // Fetch Pokémon species data for filtering
+  useEffect(() => {
+    const fetchPokemonSpecies = async () => {
+      try {
+        const response = await axios.get('https://pokeapi.co/api/v2/pokemon-species?limit=1008');
+        const results = response.data.results.map((p: any) => {
+          // Extract the species number from the URL
+          const match = p.url.match(/\/pokemon-species\/(\d+)\//);
+          const id = match ? match[1] : '';
+          return {
+            name: p.name,
+            id,
+            image: id ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png` : '',
+            displayName: p.name.charAt(0).toUpperCase() + p.name.slice(1).replace(/-/g, ' '),
+          };
+        });
+        setPokemonList(results);
+      } catch (err) {
+        console.error('Failed to fetch Pokémon species list for filtering');
+      }
+    };
+
+    fetchPokemonSpecies();
+  }, []);
   
   // Cache all card images
   useImageCache(collection.map(card => card.images?.small));
@@ -169,6 +194,7 @@ function CollectionPage({ collection, onRemove, onToggleFavorite, onToggleWishli
             <div className="filter-panel">
               <FilterPanel
                 collection={collection}
+                pokemonList={pokemonList}
                 filters={filters}
                 onFiltersChange={setFilters}
                 isOpen={isFilterPanelOpen}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useSetsCache } from '../hooks/useSetsCache';
+import axios from 'axios';
 import { CardSet, Card } from '../types';
 
 function SetsPage({ onSelectSet, collection }: { 
@@ -9,15 +9,27 @@ function SetsPage({ onSelectSet, collection }: {
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
-  const { setsList, loading, error, loadedImages, preloadImages } = useSetsCache();
+  const [setsList, setSetsList] = useState<CardSet[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [localLoadedImages, setLocalLoadedImages] = useState(new Set<string>());
 
-  // Preload first 50 images on mount
+  // Fetch sets data
   useEffect(() => {
-    if (setsList.length > 0) {
-      preloadImages(0, 50);
-    }
-  }, [setsList.length, preloadImages]);
+    const fetchSets = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get('https://api.pokemontcg.io/v2/sets');
+        setSetsList(response.data.data);
+      } catch (err) {
+        setError('Failed to fetch card sets list');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSets();
+  }, []);
 
   // Handle individual image load
   const handleImageLoad = (imageUrl: string) => {
@@ -26,13 +38,13 @@ function SetsPage({ onSelectSet, collection }: {
 
   // Filter and sort sets
   const filteredAndSortedSets = setsList
-    .filter(set => {
+    .filter((set: CardSet) => {
       const searchLower = searchTerm.toLowerCase();
       return set.name.toLowerCase().includes(searchLower) ||
              set.series.toLowerCase().includes(searchLower) ||
              (set.ptcgoCode && set.ptcgoCode.toLowerCase().includes(searchLower));
     })
-    .sort((a, b) => {
+    .sort((a: CardSet, b: CardSet) => {
       const dateA = new Date(a.releaseDate).getTime();
       const dateB = new Date(b.releaseDate).getTime();
       return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
@@ -134,7 +146,7 @@ function SetsPage({ onSelectSet, collection }: {
         
         {/* Grid layout for set tiles */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {filteredAndSortedSets.map(set => (
+          {filteredAndSortedSets.map((set: CardSet) => (
             <div 
               key={set.id} 
               className="bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-2xl shadow-sm cursor-pointer transition-all duration-500 ease-in-out hover:shadow-md hover:border-gray-400 dark:hover:border-gray-500 hover:scale-105 p-6 animate-in fade-in-0 zoom-in-95 duration-300"
