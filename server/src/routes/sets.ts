@@ -54,7 +54,8 @@ router.get('/:setId', async (req: Request, res: Response) => {
     const { setId } = req.params;
     
     if (!setId) {
-      return res.status(400).json({ error: 'Set ID is required' });
+      res.status(400).json({ error: 'Set ID is required' });
+      return;
     }
 
     const response = await axios.get<TCGSet>(`${TCG_API_URL}/sets/${setId}`);

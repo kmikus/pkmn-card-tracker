@@ -128,7 +128,8 @@ router.get('/search', async (req: Request, res: Response) => {
     const { name } = req.query;
     
     if (!name || typeof name !== 'string') {
-      return res.status(400).json({ error: 'Pokémon name is required' });
+      res.status(400).json({ error: 'Pokémon name is required' });
+      return;
     }
 
     const response = await axios.get<TCGResponse<TCGCard>>(`${TCG_API_URL}/cards`, {
@@ -153,7 +154,8 @@ router.get('/set/:setId', async (req: Request, res: Response) => {
     const { setId } = req.params;
     
     if (!setId) {
-      return res.status(400).json({ error: 'Set ID is required' });
+      res.status(400).json({ error: 'Set ID is required' });
+      return;
     }
 
     const response = await axios.get<TCGResponse<TCGCard>>(`${TCG_API_URL}/cards`, {

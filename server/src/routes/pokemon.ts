@@ -45,7 +45,8 @@ router.get('/species/:id', async (req: Request, res: Response) => {
     const { id } = req.params;
     
     if (!id) {
-      return res.status(400).json({ error: 'Pokémon ID or name is required' });
+      res.status(400).json({ error: 'Pokémon ID or name is required' });
+      return;
     }
 
     const response = await axios.get(`${POKEAPI_URL}/pokemon-species/${id}`);

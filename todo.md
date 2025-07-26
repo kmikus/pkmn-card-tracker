@@ -74,6 +74,10 @@
   - [x] Register new route files
   - [x] Add proper error handling and logging
 
+- [x] **Fix TypeScript compilation errors**
+  - [x] Resolve Express route handler return type issues
+  - [x] Ensure all endpoints compile successfully
+
 ### Phase 3: Update Frontend to Use Backend APIs
 - [x] **Update `PokemonCardsPage.tsx`**
   - [x] Replace direct TCG API call with backend API call
@@ -99,17 +103,37 @@
   - [x] Replace `usePokemonCache` dependency with direct backend API call
   - [x] Update to use new backend endpoint
 
-### Phase 4: Switch to GitHub JSON Data Source
+### Phase 4: Document and Test Current API Responses ✅
+- [x] **Create API migration documentation**
+  - [x] Create `API_MIGRATION_DOCS.md` for tracking responses
+  - [x] Create `server/src/scripts/test-api-baseline.ts` for automated testing
+  - [x] Document current response structures for all endpoints
+  - [x] Create sample API calls for each endpoint
+  - [x] Record response examples and test cases
+
+- [x] **Test current API endpoints**
+  - [x] Run `npm run test-api-baseline` to execute automated tests (updated with 5 retries, 3-min timeout)
+  - [x] Test `/api/cards/search?name={pokemonName}` with sample calls
+  - [x] Test `/api/cards/set/{setId}` with sample calls
+  - [x] Test `/api/sets` with sample calls
+  - [x] Test `/api/pokemon/species` with sample calls
+  - [x] Verify response structures match TypeScript interfaces
+
+### Phase 5: Switch to GitHub JSON Data Source
 - [ ] **Create data fetching utilities**
   - [ ] Create `server/src/services/githubDataService.ts`
   - [ ] Implement functions to fetch JSON data from GitHub repository
   - [ ] Add caching layer for GitHub data (server-side, not frontend)
 
-- [ ] **Update backend endpoints to use GitHub data**
-  - [ ] Modify `/api/cards/search` to use GitHub JSON files
-  - [ ] Modify `/api/cards/set/{setId}` to use GitHub JSON files
-  - [ ] Modify `/api/sets` to use GitHub JSON files
-  - [ ] Modify `/api/pokemon/species` to use GitHub JSON files
+- [ ] **Update backend endpoints to use GitHub data (one at a time)**
+  - [ ] Update `/api/cards/search` to use GitHub JSON files
+  - [ ] Test and verify no breaking changes
+  - [ ] Update `/api/cards/set/{setId}` to use GitHub JSON files
+  - [ ] Test and verify no breaking changes
+  - [ ] Update `/api/sets` to use GitHub JSON files
+  - [ ] Test and verify no breaking changes
+  - [ ] Update `/api/pokemon/species` to use GitHub JSON files
+  - [ ] Test and verify no breaking changes
 
 - [ ] **Implement data synchronization**
   - [ ] Create script to periodically sync with GitHub repository
@@ -160,10 +184,29 @@
 - `server/src/routes/` - **ADD NEW FILES**
 - `server/src/services/` - **ADD NEW FILES**
 
+## Current Status Summary
+
+### ✅ Completed
+- **Phase 1**: All frontend caching removed (`usePokemonCache`, `useSetsCache`)
+- **Phase 2**: Backend API facades created and TypeScript errors resolved
+- **Phase 3**: Frontend updated to use new backend APIs
+- **Development Setup**: Hot reloading configured with `npm run dev:hot`
+
+### 🔄 In Progress
+- **Phase 5**: Switch to GitHub JSON Data Source
+  - Ready to begin migrating backend endpoints to use GitHub JSON data
+  - Need to create GitHub data fetching service and update endpoints one at a time
+
+### 📋 Next Steps for New Session
+1. **Begin Phase 5**: Start switching backend endpoints to use GitHub JSON data (one at a time)
+2. **Create GitHub data service**: Implement `server/src/services/githubDataService.ts`
+3. **Update endpoints**: Migrate each endpoint from TCG API to GitHub JSON data
+4. **Clean up localStorage**: Remove remaining cache keys from browser storage
+
 ## Success Criteria
-- [ ] All frontend caching removed
-- [ ] All TCG API calls moved to backend facades
+- [x] All frontend caching removed
+- [x] All TCG API calls moved to backend facades
 - [ ] Backend APIs use GitHub JSON data source
 - [ ] No regression in functionality or performance
-- [ ] Proper error handling implemented
+- [x] Proper error handling implemented
 - [ ] Fallback mechanisms in place
