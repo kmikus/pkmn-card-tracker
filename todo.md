@@ -52,52 +52,52 @@
   - [ ] Remove any other cache-related localStorage items
 
 ### Phase 2: Create Backend API Facades
-- [ ] **Create new backend routes**
-  - [ ] Create `server/src/routes/cards.ts` for card-related endpoints
-  - [ ] Create `server/src/routes/sets.ts` for set-related endpoints
-  - [ ] Create `server/src/routes/pokemon.ts` for Pokémon species endpoints
+- [x] **Create new backend routes**
+  - [x] Create `server/src/routes/cards.ts` for card-related endpoints
+  - [x] Create `server/src/routes/sets.ts` for set-related endpoints
+  - [x] Create `server/src/routes/pokemon.ts` for Pokémon species endpoints
 
-- [ ] **Implement card endpoints**
-  - [ ] `GET /api/cards/search?name={pokemonName}` - Search cards by Pokémon name
-  - [ ] `GET /api/cards/set/{setId}` - Get all cards from a specific set
-  - [ ] Initially use existing TCG API calls (keep implementation as-is)
+- [x] **Implement card endpoints**
+  - [x] `GET /api/cards/search?name={pokemonName}` - Search cards by Pokémon name
+  - [x] `GET /api/cards/set/{setId}` - Get all cards from a specific set
+  - [x] Initially use existing TCG API calls (keep implementation as-is)
 
-- [ ] **Implement set endpoints**
-  - [ ] `GET /api/sets` - Get all card sets
-  - [ ] Initially use existing TCG API calls (keep implementation as-is)
+- [x] **Implement set endpoints**
+  - [x] `GET /api/sets` - Get all card sets
+  - [x] Initially use existing TCG API calls (keep implementation as-is)
 
-- [ ] **Implement Pokémon species endpoints**
-  - [ ] `GET /api/pokemon/species` - Get all Pokémon species
-  - [ ] Initially use existing PokeAPI calls (keep implementation as-is)
+- [x] **Implement Pokémon species endpoints**
+  - [x] `GET /api/pokemon/species` - Get all Pokémon species
+  - [x] Initially use existing PokeAPI calls (keep implementation as-is)
 
-- [ ] **Update backend index.ts**
-  - [ ] Register new route files
-  - [ ] Add proper error handling and logging
+- [x] **Update backend index.ts**
+  - [x] Register new route files
+  - [x] Add proper error handling and logging
 
 ### Phase 3: Update Frontend to Use Backend APIs
-- [ ] **Update `PokemonCardsPage.tsx`**
-  - [ ] Replace direct TCG API call with backend API call
-  - [ ] Update axios call to use `BACKEND_URL + '/api/cards/search'`
-  - [ ] Maintain same response structure for compatibility
+- [x] **Update `PokemonCardsPage.tsx`**
+  - [x] Replace direct TCG API call with backend API call
+  - [x] Update axios call to use `BACKEND_URL + '/api/cards/search'`
+  - [x] Maintain same response structure for compatibility
 
-- [ ] **Update `SetCardsPage.tsx`**
-  - [ ] Replace direct TCG API call with backend API call
-  - [ ] Update axios call to use `BACKEND_URL + '/api/cards/set/{setId}'`
-  - [ ] Maintain same response structure for compatibility
+- [x] **Update `SetCardsPage.tsx`**
+  - [x] Replace direct TCG API call with backend API call
+  - [x] Update axios call to use `BACKEND_URL + '/api/cards/set/{setId}'`
+  - [x] Maintain same response structure for compatibility
 
-- [ ] **Update `SetsPage.tsx`**
-  - [ ] Replace `useSetsCache` with direct backend API call
-  - [ ] Update axios call to use `BACKEND_URL + '/api/sets'`
-  - [ ] Maintain same response structure for compatibility
+- [x] **Update `SetsPage.tsx`**
+  - [x] Replace `useSetsCache` with direct backend API call
+  - [x] Update axios call to use `BACKEND_URL + '/api/sets'`
+  - [x] Maintain same response structure for compatibility
 
-- [ ] **Update `HomePage.tsx`**
-  - [ ] Replace `usePokemonCache` with direct backend API call
-  - [ ] Update axios call to use `BACKEND_URL + '/api/pokemon/species'`
-  - [ ] Maintain same response structure for compatibility
+- [x] **Update `HomePage.tsx`**
+  - [x] Replace `usePokemonCache` with direct backend API call
+  - [x] Update axios call to use `BACKEND_URL + '/api/pokemon/species'`
+  - [x] Maintain same response structure for compatibility
 
-- [ ] **Update `CollectionPage.tsx` and `FilterPanel.tsx`**
-  - [ ] Replace `usePokemonCache` dependency with direct backend API call
-  - [ ] Update to use new backend endpoint
+- [x] **Update `CollectionPage.tsx` and `FilterPanel.tsx`**
+  - [x] Replace `usePokemonCache` dependency with direct backend API call
+  - [x] Update to use new backend endpoint
 
 ### Phase 4: Switch to GitHub JSON Data Source
 - [ ] **Create data fetching utilities**

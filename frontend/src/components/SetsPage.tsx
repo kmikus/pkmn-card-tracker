@@ -19,7 +19,7 @@ function SetsPage({ onSelectSet, collection }: {
     const fetchSets = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('https://api.pokemontcg.io/v2/sets');
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'}/api/sets`);
         setSetsList(response.data.data);
       } catch (err) {
         setError('Failed to fetch card sets list');

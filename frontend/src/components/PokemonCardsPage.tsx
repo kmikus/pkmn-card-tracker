@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Pokemon, Card } from '../types';
 import CardActionButtons from './CardActionButtons';
 
-const TCG_API_URL = 'https://api.pokemontcg.io/v2/cards';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
 
 // Image cache hook
 function useImageCache(urls: string[]) {
@@ -38,7 +38,9 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }: {
     // Use the base name for searching cards to get all forms, fallback to regular name
     const searchName = pokemon.baseName || pokemon.name;
     
-    axios.get(`${TCG_API_URL}?q=name:${searchName}`)
+    axios.get(`${BACKEND_URL}/api/cards/search`, {
+      params: { name: searchName }
+    })
       .then(res => {
         setCards(res.data.data);
         setLoading(false);

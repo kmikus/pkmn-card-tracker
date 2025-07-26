@@ -33,7 +33,7 @@ function CollectionPage({ collection, onRemove, onToggleFavorite, onToggleWishli
   useEffect(() => {
     const fetchPokemonSpecies = async () => {
       try {
-        const response = await axios.get('https://pokeapi.co/api/v2/pokemon-species?limit=1008');
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'}/api/pokemon/species?limit=1008`);
         const results = response.data.results.map((p: any) => {
           // Extract the species number from the URL
           const match = p.url.match(/\/pokemon-species\/(\d+)\//);

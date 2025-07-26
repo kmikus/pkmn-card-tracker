@@ -8,6 +8,9 @@ import passport from 'passport';
 import authRoutes from './routes/auth';
 import collectionRoutes from './routes/collection';
 import tagRoutes from './routes/tags';
+import cardsRoutes from './routes/cards';
+import setsRoutes from './routes/sets';
+import pokemonRoutes from './routes/pokemon';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -35,6 +38,9 @@ app.use(passport.initialize());
 app.use('/auth', authRoutes);
 app.use('/collection', collectionRoutes);
 app.use('/tags', tagRoutes);
+app.use('/api/cards', cardsRoutes);
+app.use('/api/sets', setsRoutes);
+app.use('/api/pokemon', pokemonRoutes);
 
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

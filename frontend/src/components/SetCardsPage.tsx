@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Card, CardSet } from '../types';
 import CardActionButtons from './CardActionButtons';
 
-const TCG_API_URL = 'https://api.pokemontcg.io/v2/cards';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
 
 // Image cache hook
 function useImageCache(urls: string[]) {
@@ -36,7 +36,7 @@ function SetCardsPage({ set, onBack, onAdd, onRemove, collection }: {
     setLoading(true);
     
     // Fetch cards from the selected set
-    axios.get(`${TCG_API_URL}?q=set.id:${set.id}`)
+    axios.get(`${BACKEND_URL}/api/cards/set/${set.id}`)
       .then(res => {
         setCards(res.data.data);
         setLoading(false);
