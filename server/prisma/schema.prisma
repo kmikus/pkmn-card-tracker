@@ -26,6 +26,24 @@ model cards {
   @@map("cards")
 }
 
+// New sets table to store all set data from GitHub
+model sets {
+  id            String   @id
+  name          String
+  series        String
+  printedTotal  Int
+  total         Int
+  ptcgoCode     String?
+  releaseDate   String
+  updatedAt     String
+  symbol        String
+  logo          String
+  legalities    String?  // JSON string for legalities
+  created_at    DateTime @default(now())
+
+  @@map("sets")
+}
+
 // Junction table for user ownership of cards
 model user_collection {
   userid      String

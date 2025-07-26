@@ -1,10 +1,8 @@
 import { Router, Request, Response } from 'express';
-import axios from 'axios';
+import { PrismaClient } from '../../generated/prisma';
 
 const router = Router();
-
-// TCG API base URL
-const TCG_API_URL = 'https://api.pokemontcg.io/v2';
+const prisma = new PrismaClient();
 
 // Type definitions matching TCG API response structure
 interface TCGSet {
@@ -33,17 +31,51 @@ interface TCGResponse<T> {
 // Get all card sets
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const response = await axios.get<TCGResponse<TCGSet>>(`${TCG_API_URL}/sets`, {
-      params: {
-        page: req.query.page || 1,
-        pageSize: req.query.pageSize || 250
+    // Parse pagination parameters
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 250;
+    const skip = (page - 1) * pageSize;
+
+    // Get sets from database with pagination
+    const sets = await prisma.sets.findMany({
+      skip,
+      take: pageSize,
+      orderBy: {
+        releaseDate: 'desc' // Newest sets first
       }
     });
 
+    // Get total count for pagination
+    const totalCount = await prisma.sets.count();
+
+    // Transform database sets to match TCG API response structure
+    const tcgSets: TCGSet[] = sets.map(set => ({
+      id: set.id,
+      name: set.name,
+      series: set.series,
+      printedTotal: set.printedTotal,
+      total: set.total,
+      ptcgoCode: set.ptcgoCode || undefined,
+      releaseDate: set.releaseDate,
+      updatedAt: set.updatedAt,
+      images: {
+        symbol: set.symbol,
+        logo: set.logo
+      }
+    }));
+
     // Return the exact same structure as TCG API
-    res.json(response.data);
+    const response: TCGResponse<TCGSet> = {
+      data: tcgSets,
+      page,
+      pageSize,
+      count: tcgSets.length,
+      totalCount
+    };
+
+    res.json(response);
   } catch (error: any) {
-    console.error('Error fetching sets:', error.message);
+    console.error('Error fetching sets from database:', error.message);
     res.status(500).json({ error: 'Failed to fetch sets' });
   }
 });
@@ -58,12 +90,36 @@ router.get('/:setId', async (req: Request, res: Response) => {
       return;
     }
 
-    const response = await axios.get<TCGSet>(`${TCG_API_URL}/sets/${setId}`);
+    // Get set from database
+    const set = await prisma.sets.findUnique({
+      where: { id: setId }
+    });
+
+    if (!set) {
+      res.status(404).json({ error: 'Set not found' });
+      return;
+    }
+
+    // Transform database set to match TCG API response structure
+    const tcgSet: TCGSet = {
+      id: set.id,
+      name: set.name,
+      series: set.series,
+      printedTotal: set.printedTotal,
+      total: set.total,
+      ptcgoCode: set.ptcgoCode || undefined,
+      releaseDate: set.releaseDate,
+      updatedAt: set.updatedAt,
+      images: {
+        symbol: set.symbol,
+        logo: set.logo
+      }
+    };
 
     // Return the exact same structure as TCG API
-    res.json(response.data);
+    res.json(tcgSet);
   } catch (error: any) {
-    console.error('Error fetching set by ID:', error.message);
+    console.error('Error fetching set by ID from database:', error.message);
     res.status(500).json({ error: 'Failed to fetch set' });
   }
 });

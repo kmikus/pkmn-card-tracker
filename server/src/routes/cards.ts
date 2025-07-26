@@ -229,18 +229,83 @@ router.get('/set/:setId', async (req: Request, res: Response) => {
       return;
     }
 
-    const response = await axios.get<TCGResponse<TCGCard>>(`${TCG_API_URL}/cards`, {
-      params: {
-        q: `set.id:${setId}`,
-        page: req.query.page || 1,
-        pageSize: req.query.pageSize || 250
+    // Parse pagination parameters
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 250;
+    const skip = (page - 1) * pageSize;
+
+    // Search cards in database by set ID
+    // Sort by card number within the set
+    const cards = await prisma.$queryRaw<Array<{
+      id: string;
+      name: string;
+      setname: string;
+      image: string;
+      data: string;
+      created_at: Date;
+    }>>`
+      SELECT * FROM cards 
+      WHERE (data::json->'set'->>'id') = ${setId}
+      ORDER BY CASE 
+                 WHEN (data::json->>'number') ~ '^[0-9]+$' 
+                 THEN CAST((data::json->>'number') AS INTEGER)
+                 ELSE 999999
+               END ASC,
+               (data::json->>'number') ASC
+      LIMIT ${pageSize} OFFSET ${skip}
+    `;
+
+    // Get total count for pagination
+    const totalCountResult = await prisma.$queryRaw<Array<{count: bigint}>>`
+      SELECT COUNT(*) as count FROM cards 
+      WHERE (data::json->'set'->>'id') = ${setId}
+    `;
+    const totalCount = Number(totalCountResult[0]?.count || 0);
+
+    // Parse JSON data and reconstruct TCG API response structure
+    const tcgCards: TCGCard[] = cards.map((card: any) => {
+      try {
+        const cardData = JSON.parse(card.data || '{}');
+        return cardData as TCGCard;
+      } catch (error) {
+        console.error(`Error parsing JSON for card ${card.id}:`, error);
+        // Return a minimal card structure if JSON parsing fails
+        return {
+          id: card.id,
+          name: card.name || '',
+          images: {
+            small: card.image || '',
+            large: card.image || ''
+          },
+          set: {
+            id: setId,
+            name: card.setname || '',
+            series: '',
+            printedTotal: 0,
+            total: 0,
+            releaseDate: '',
+            updatedAt: '',
+            images: {
+              symbol: '',
+              logo: ''
+            }
+          }
+        } as TCGCard;
       }
     });
 
     // Return the exact same structure as TCG API
-    res.json(response.data);
+    const response: TCGResponse<TCGCard> = {
+      data: tcgCards,
+      page,
+      pageSize,
+      count: tcgCards.length,
+      totalCount
+    };
+
+    res.json(response);
   } catch (error: any) {
-    console.error('Error fetching cards by set:', error.message);
+    console.error('Error fetching cards by set from database:', error.message);
     res.status(500).json({ error: 'Failed to fetch cards' });
   }
 });
