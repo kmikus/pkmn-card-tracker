@@ -136,24 +136,27 @@ router.get('/search', async (req: Request, res: Response) => {
     const skip = (page - 1) * pageSize;
 
     // Search cards in database by name (case-insensitive partial match)
-    // Sort by release date in reverse chronological order (newest first)
+    // Join with sets table to get release date for proper sorting
+    // Sort by release date in reverse chronological order (newest first), then by card number
     const cards = await prisma.$queryRaw<Array<{
       id: string;
       name: string;
       setname: string;
       image: string;
       data: string;
+      "setId": string;
+      "cardNumber": string;
+      "cardNumberInt": number | null;
       created_at: Date;
+      "releaseDate": string | null;
     }>>`
-      SELECT * FROM cards 
-      WHERE name ILIKE ${`%${name}%`}
-      ORDER BY (data::json->'set'->>'releaseDate') DESC, 
-               CASE 
-                 WHEN (data::json->>'number') ~ '^[0-9]+$' 
-                 THEN CAST((data::json->>'number') AS INTEGER)
-                 ELSE 999999
-               END ASC,
-               (data::json->>'number') ASC
+      SELECT c.*, s."releaseDate"
+      FROM cards c
+      LEFT JOIN sets s ON c."setId" = s.id
+      WHERE c.name ILIKE ${`%${name}%`}
+      ORDER BY COALESCE(s."releaseDate", '1900-01-01') DESC, 
+               COALESCE(c."cardNumberInt", 999999) ASC,
+               c."cardNumber" ASC
       LIMIT ${pageSize} OFFSET ${skip}
     `;
 
@@ -167,14 +170,48 @@ router.get('/search', async (req: Request, res: Response) => {
       }
     });
 
+    // Get set information for all cards
+    const setIds = [...new Set(cards.map(card => card.setId))];
+    const sets = await prisma.sets.findMany({
+      where: {
+        id: {
+          in: setIds
+        }
+      }
+    });
+    const setMap = new Map(sets.map(set => [set.id, set]));
+
     // Parse JSON data and reconstruct TCG API response structure
     const tcgCards: TCGCard[] = cards.map((card: any) => {
       try {
         const cardData = JSON.parse(card.data || '{}');
-        return cardData as TCGCard;
+        const setInfo = setMap.get(card.setId);
+        
+        // Construct the set object from our database structure
+        const setObject = {
+          id: card.setId || '',
+          name: setInfo?.name || card.setname || '',
+          series: setInfo?.series || '',
+          printedTotal: setInfo?.printedTotal || 0,
+          total: setInfo?.total || 0,
+          ptcgoCode: setInfo?.ptcgoCode || undefined,
+          releaseDate: setInfo?.releaseDate || '',
+          updatedAt: setInfo?.updatedAt || '',
+          images: {
+            symbol: setInfo?.symbol || '',
+            logo: setInfo?.logo || ''
+          }
+        };
+        
+        // Return the card with the constructed set object
+        return {
+          ...cardData,
+          set: setObject
+        } as TCGCard;
       } catch (error) {
         console.error(`Error parsing JSON for card ${card.id}:`, error);
         // Return a minimal card structure if JSON parsing fails
+        const setInfo = setMap.get(card.setId);
         return {
           id: card.id,
           name: card.name || '',
@@ -183,16 +220,16 @@ router.get('/search', async (req: Request, res: Response) => {
             large: card.image || ''
           },
           set: {
-            id: '',
-            name: card.setname || '',
-            series: '',
-            printedTotal: 0,
-            total: 0,
-            releaseDate: '',
-            updatedAt: '',
+            id: card.setId || '',
+            name: setInfo?.name || card.setname || '',
+            series: setInfo?.series || '',
+            printedTotal: setInfo?.printedTotal || 0,
+            total: setInfo?.total || 0,
+            releaseDate: setInfo?.releaseDate || '',
+            updatedAt: setInfo?.updatedAt || '',
             images: {
-              symbol: '',
-              logo: ''
+              symbol: setInfo?.symbol || '',
+              logo: setInfo?.logo || ''
             }
           }
         } as TCGCard;
@@ -231,6 +268,7 @@ router.get('/set/:setId', async (req: Request, res: Response) => {
     const skip = (page - 1) * pageSize;
 
     // Search cards in database by set ID using indexed columns
+    // Join with sets table to get set information
     // Sort by cardNumberInt first, then by cardNumber
     const cards = await prisma.$queryRaw<Array<{
       id: string;
@@ -238,11 +276,17 @@ router.get('/set/:setId', async (req: Request, res: Response) => {
       setname: string;
       image: string;
       data: string;
+      "setId": string;
+      "cardNumber": string;
+      "cardNumberInt": number | null;
       created_at: Date;
+      "releaseDate": string | null;
     }>>`
-      SELECT * FROM cards 
-      WHERE "setId" = ${setId}
-      ORDER BY COALESCE("cardNumberInt", 999999) ASC, "cardNumber" ASC
+      SELECT c.*, s."releaseDate"
+      FROM cards c
+      LEFT JOIN sets s ON c."setId" = s.id
+      WHERE c."setId" = ${setId}
+      ORDER BY COALESCE(c."cardNumberInt", 999999) ASC, c."cardNumber" ASC
       LIMIT ${pageSize} OFFSET ${skip}
     `;
 
@@ -253,14 +297,48 @@ router.get('/set/:setId', async (req: Request, res: Response) => {
     `;
     const totalCount = Number(totalCountResult[0]?.count || 0);
 
+    // Get set information for all cards
+    const setIds = [...new Set(cards.map(card => card.setId))];
+    const sets = await prisma.sets.findMany({
+      where: {
+        id: {
+          in: setIds
+        }
+      }
+    });
+    const setMap = new Map(sets.map(set => [set.id, set]));
+
     // Parse JSON data and reconstruct TCG API response structure
     const tcgCards: TCGCard[] = cards.map((card: any) => {
       try {
         const cardData = JSON.parse(card.data || '{}');
-        return cardData as TCGCard;
+        const setInfo = setMap.get(card.setId);
+        
+        // Construct the set object from our database structure
+        const setObject = {
+          id: card.setId || '',
+          name: setInfo?.name || card.setname || '',
+          series: setInfo?.series || '',
+          printedTotal: setInfo?.printedTotal || 0,
+          total: setInfo?.total || 0,
+          ptcgoCode: setInfo?.ptcgoCode || undefined,
+          releaseDate: setInfo?.releaseDate || '',
+          updatedAt: setInfo?.updatedAt || '',
+          images: {
+            symbol: setInfo?.symbol || '',
+            logo: setInfo?.logo || ''
+          }
+        };
+        
+        // Return the card with the constructed set object
+        return {
+          ...cardData,
+          set: setObject
+        } as TCGCard;
       } catch (error) {
         console.error(`Error parsing JSON for card ${card.id}:`, error);
         // Return a minimal card structure if JSON parsing fails
+        const setInfo = setMap.get(card.setId);
         return {
           id: card.id,
           name: card.name || '',
@@ -269,16 +347,16 @@ router.get('/set/:setId', async (req: Request, res: Response) => {
             large: card.image || ''
           },
           set: {
-            id: setId,
-            name: card.setname || '',
-            series: '',
-            printedTotal: 0,
-            total: 0,
-            releaseDate: '',
-            updatedAt: '',
+            id: card.setId || '',
+            name: setInfo?.name || card.setname || '',
+            series: setInfo?.series || '',
+            printedTotal: setInfo?.printedTotal || 0,
+            total: setInfo?.total || 0,
+            releaseDate: setInfo?.releaseDate || '',
+            updatedAt: setInfo?.updatedAt || '',
             images: {
-              symbol: '',
-              logo: ''
+              symbol: setInfo?.symbol || '',
+              logo: setInfo?.logo || ''
             }
           }
         } as TCGCard;
