@@ -20,9 +20,18 @@ model cards {
   image           String?
   data            String?         // JSON data from TCG API
   created_at      DateTime        @default(now())
+  
+  // New indexed fields for better query performance
+  setId           String?         // Extracted from data::json->'set'->>'id'
+  cardNumber      String?         // Extracted from data::json->>'number'
+  cardNumberInt   Int?            // Numeric version of cardNumber for sorting
+  
   user_collection user_collection[]
   card_tags       card_tags[]
 
+  @@index([setId])
+  @@index([cardNumber])
+  @@index([cardNumberInt])
   @@map("cards")
 }
 

@@ -1,12 +1,8 @@
 import { Router, Request, Response } from 'express';
-import axios from 'axios';
 import { PrismaClient } from '../../generated/prisma';
 
 const router = Router();
 const prisma = new PrismaClient();
-
-// TCG API base URL (keeping for fallback)
-const TCG_API_URL = 'https://api.pokemontcg.io/v2';
 
 // Type definitions matching TCG API response structure
 interface TCGCard {
@@ -234,8 +230,8 @@ router.get('/set/:setId', async (req: Request, res: Response) => {
     const pageSize = parseInt(req.query.pageSize as string) || 250;
     const skip = (page - 1) * pageSize;
 
-    // Search cards in database by set ID
-    // Sort by card number within the set
+    // Search cards in database by set ID using indexed columns
+    // Sort by cardNumberInt first, then by cardNumber
     const cards = await prisma.$queryRaw<Array<{
       id: string;
       name: string;
@@ -245,20 +241,15 @@ router.get('/set/:setId', async (req: Request, res: Response) => {
       created_at: Date;
     }>>`
       SELECT * FROM cards 
-      WHERE (data::json->'set'->>'id') = ${setId}
-      ORDER BY CASE 
-                 WHEN (data::json->>'number') ~ '^[0-9]+$' 
-                 THEN CAST((data::json->>'number') AS INTEGER)
-                 ELSE 999999
-               END ASC,
-               (data::json->>'number') ASC
+      WHERE "setId" = ${setId}
+      ORDER BY COALESCE("cardNumberInt", 999999) ASC, "cardNumber" ASC
       LIMIT ${pageSize} OFFSET ${skip}
     `;
 
-    // Get total count for pagination
+    // Get total count for pagination using indexed column
     const totalCountResult = await prisma.$queryRaw<Array<{count: bigint}>>`
       SELECT COUNT(*) as count FROM cards 
-      WHERE (data::json->'set'->>'id') = ${setId}
+      WHERE "setId" = ${setId}
     `;
     const totalCount = Number(totalCountResult[0]?.count || 0);
 

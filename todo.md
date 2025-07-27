@@ -14,14 +14,11 @@
 ## Background Context
 
 ### Current State Analysis
-- **Frontend Caching Issues**: `usePokemonCache` and `useSetsCache` hooks are causing problems
-- **Direct TCG API Calls**: Frontend components directly call TCG API endpoints:
-  - `PokemonCardsPage.tsx`: `https://api.pokemontcg.io/v2/cards?q=name:${searchName}`
-  - `SetCardsPage.tsx`: `https://api.pokemontcg.io/v2/cards?q=set.id:${set.id}`
-  - `useSetsCache.ts`: `https://api.pokemontcg.io/v2/sets`
-  - `usePokemonCache.ts`: `https://pokeapi.co/api/v2/pokemon-species?limit=1008`
-- **Database Structure**: Already have `cards` table with 19,500+ cards populated from TCG API
-- **Data Source**: GitHub repository at https://github.com/PokemonTCG/pokemon-tcg-data contains all JSON data
+- **✅ Frontend Caching Issues**: Resolved - `usePokemonCache` and `useSetsCache` hooks have been removed
+- **✅ Direct TCG API Calls**: Resolved - All frontend components now use backend APIs
+- **✅ Database Structure**: `cards` table with 19,500+ cards populated from TCG API
+- **✅ Data Source**: GitHub repository at https://github.com/PokemonTCG/pokemon-tcg-data contains all JSON data
+- **✅ API Migration**: 3/4 endpoints migrated to database (cards/search, cards/set, sets)
 
 ### Data Source Details
 - **GitHub Repository**: https://github.com/PokemonTCG/pokemon-tcg-data
@@ -33,7 +30,7 @@
 
 ## Implementation Checklist
 
-### Phase 1: Remove Frontend Caching
+### Phase 1: Remove Frontend Caching ✅ COMPLETED
 - [x] **Remove `usePokemonCache` hook**
   - [x] Delete `frontend/src/hooks/usePokemonCache.ts`
   - [x] Update `HomePage.tsx` to remove caching dependency
@@ -46,12 +43,12 @@
   - [x] Update `SetsPage.tsx` to remove caching dependency
   - [x] Replace with direct API calls to new backend endpoints
 
-- [ ] **Clean up localStorage cache keys**
-  - [ ] Remove `pokemon_species_cache_v1` from localStorage
-  - [ ] Remove `pokemon_sets_cache_v1` from localStorage
-  - [ ] Remove any other cache-related localStorage items
+- [x] **Clean up localStorage cache keys**
+  - [x] Remove `pokemon_species_cache_v1` from localStorage
+  - [x] Remove `pokemon_sets_cache_v1` from localStorage
+  - [x] Remove any other cache-related localStorage items
 
-### Phase 2: Create Backend API Facades
+### Phase 2: Create Backend API Facades ✅ COMPLETED
 - [x] **Create new backend routes**
   - [x] Create `server/src/routes/cards.ts` for card-related endpoints
   - [x] Create `server/src/routes/sets.ts` for set-related endpoints
@@ -60,15 +57,15 @@
 - [x] **Implement card endpoints**
   - [x] `GET /api/cards/search?name={pokemonName}` - Search cards by Pokémon name
   - [x] `GET /api/cards/set/{setId}` - Get all cards from a specific set
-  - [x] Initially use existing TCG API calls (keep implementation as-is)
+  - [x] ✅ Migrated to database (no longer using TCG API)
 
 - [x] **Implement set endpoints**
   - [x] `GET /api/sets` - Get all card sets
-  - [x] Initially use existing TCG API calls (keep implementation as-is)
+  - [x] ✅ Migrated to database (no longer using TCG API)
 
 - [x] **Implement Pokémon species endpoints**
   - [x] `GET /api/pokemon/species` - Get all Pokémon species
-  - [x] Initially use existing PokeAPI calls (keep implementation as-is)
+  - [x] Still using PokeAPI (intentionally kept)
 
 - [x] **Update backend index.ts**
   - [x] Register new route files
@@ -78,7 +75,7 @@
   - [x] Resolve Express route handler return type issues
   - [x] Ensure all endpoints compile successfully
 
-### Phase 3: Update Frontend to Use Backend APIs
+### Phase 3: Update Frontend to Use Backend APIs ✅ COMPLETED
 - [x] **Update `PokemonCardsPage.tsx`**
   - [x] Replace direct TCG API call with backend API call
   - [x] Update axios call to use `BACKEND_URL + '/api/cards/search'`
@@ -103,7 +100,7 @@
   - [x] Replace `usePokemonCache` dependency with direct backend API call
   - [x] Update to use new backend endpoint
 
-### Phase 4: Document and Test Current API Responses ✅
+### Phase 4: Document and Test Current API Responses ✅ COMPLETED
 - [x] **Create API migration documentation**
   - [x] Create `API_MIGRATION_DOCS.md` for tracking responses
   - [x] Create `server/src/scripts/test-api-baseline.ts` for automated testing
@@ -112,6 +109,17 @@
   - [x] Record response examples and test cases
 
 - [x] **Test current API endpoints**
+
+### Phase 5: Cleanup and Optimization ✅ COMPLETED
+- [x] **Remove unused TCG API references**
+  - [x] Remove unused `TCG_API_URL` constant from `server/src/routes/cards.ts`
+  - [x] Remove unused `axios` import from `server/src/routes/cards.ts`
+  - [x] Update documentation to reflect completed migration status
+
+- [x] **Update documentation**
+  - [x] Mark all phases as completed in TODO.md
+  - [x] Update current state analysis to reflect resolved issues
+  - [x] Document successful API migration completion
   - [x] Run `npm run test-api-baseline` to execute automated tests (updated with 5 retries, 3-min timeout)
   - [x] Test `/api/cards/search?name={pokemonName}` with sample calls
   - [x] Test `/api/cards/set/{setId}` with sample calls

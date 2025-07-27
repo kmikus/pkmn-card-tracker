@@ -12,6 +12,7 @@
     "test-db": "node dist/test-db.js",
     "populate-cards": "npm run build && node dist/scripts/populate-cards.js",
     "populate-sets": "npm run build && node dist/scripts/populate-sets.js",
+    "populate-card-fields": "npm run build && node dist/scripts/populate-card-fields.js",
     "test-api-baseline": "npm run build && node dist/scripts/test-api-baseline.js"
   },
   "keywords": [],
