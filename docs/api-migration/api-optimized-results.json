@@ -1,0 +1,455 @@
+{
+  "timestamp": "2025-07-27T16:33:18.411Z",
+  "backendUrl": "http://localhost:4000",
+  "totalTests": 31,
+  "successfulTests": 31,
+  "failedTests": 0,
+  "averageResponseTime": 424.2903225806452,
+  "results": [
+    {
+      "endpoint": "/api/cards/search",
+      "testCase": "search",
+      "status": "success",
+      "responseTime": 4570,
+      "retries": 1,
+      "cardCount": 173,
+      "cardNames": [
+        "Pikachu ex",
+        "Pikachu ex",
+        "Pikachu ex"
+      ],
+      "totalCount": 173,
+      "page": 1,
+      "pageSize": 250,
+      "timestamp": "2025-07-27T16:33:09.819Z"
+    },
+    {
+      "endpoint": "/api/cards/search",
+      "testCase": "search",
+      "status": "success",
+      "responseTime": 478,
+      "retries": 0,
+      "cardCount": 102,
+      "cardNames": [
+        "Charizard ex",
+        "Charizard ex",
+        "Charizard ex"
+      ],
+      "totalCount": 102,
+      "page": 1,
+      "pageSize": 250,
+      "timestamp": "2025-07-27T16:33:10.298Z"
+    },
+    {
+      "endpoint": "/api/cards/search",
+      "testCase": "search",
+      "status": "success",
+      "responseTime": 592,
+      "retries": 0,
+      "cardCount": 19,
+      "cardNames": [
+        "Ivysaur",
+        "Ivysaur",
+        "Ivysaur"
+      ],
+      "totalCount": 19,
+      "page": 1,
+      "pageSize": 250,
+      "timestamp": "2025-07-27T16:33:10.890Z"
+    },
+    {
+      "endpoint": "/api/cards/search",
+      "testCase": "search",
+      "status": "success",
+      "responseTime": 798,
+      "retries": 0,
+      "cardCount": 32,
+      "cardNames": [
+        "Team Rocket's Nidoran♀",
+        "Team Rocket's Nidoran♂",
+        "Nidoran ♀"
+      ],
+      "totalCount": 32,
+      "page": 1,
+      "pageSize": 250,
+      "timestamp": "2025-07-27T16:33:11.689Z"
+    },
+    {
+      "endpoint": "/api/cards/search",
+      "testCase": "search",
+      "status": "success",
+      "responseTime": 701,
+      "retries": 0,
+      "cardCount": 6,
+      "cardNames": [
+        "Iron Hands ex",
+        "Iron Hands ex",
+        "Iron Hands"
+      ],
+      "totalCount": 6,
+      "page": 1,
+      "pageSize": 250,
+      "timestamp": "2025-07-27T16:33:12.391Z"
+    },
+    {
+      "endpoint": "/api/cards/search",
+      "testCase": "search",
+      "status": "success",
+      "responseTime": 400,
+      "retries": 0,
+      "cardCount": 53,
+      "cardNames": [
+        "Ninetales",
+        "Ninetales",
+        "Ninetales ex"
+      ],
+      "totalCount": 53,
+      "page": 1,
+      "pageSize": 250,
+      "timestamp": "2025-07-27T16:33:12.791Z"
+    },
+    {
+      "endpoint": "/api/cards/search",
+      "testCase": "search",
+      "status": "success",
+      "responseTime": 304,
+      "retries": 0,
+      "cardCount": 19,
+      "cardNames": [
+        "Toxtricity",
+        "Toxtricity ex",
+        "Toxtricity ex"
+      ],
+      "totalCount": 19,
+      "page": 1,
+      "pageSize": 250,
+      "timestamp": "2025-07-27T16:33:13.095Z"
+    },
+    {
+      "endpoint": "/api/cards/set/base1",
+      "testCase": "base1",
+      "status": "success",
+      "responseTime": 468,
+      "retries": 0,
+      "cardCount": 102,
+      "cardNames": [
+        "Alakazam",
+        "Blastoise",
+        "Chansey"
+      ],
+      "totalCount": 102,
+      "page": 1,
+      "pageSize": 250,
+      "timestamp": "2025-07-27T16:33:13.564Z"
+    },
+    {
+      "endpoint": "/api/cards/set/base2",
+      "testCase": "base2",
+      "status": "success",
+      "responseTime": 197,
+      "retries": 0,
+      "cardCount": 64,
+      "cardNames": [
+        "Clefable",
+        "Electrode",
+        "Flareon"
+      ],
+      "totalCount": 64,
+      "page": 1,
+      "pageSize": 250,
+      "timestamp": "2025-07-27T16:33:13.761Z"
+    },
+    {
+      "endpoint": "/api/cards/set/base3",
+      "testCase": "base3",
+      "status": "success",
+      "responseTime": 199,
+      "retries": 0,
+      "cardCount": 62,
+      "cardNames": [
+        "Aerodactyl",
+        "Articuno",
+        "Ditto"
+      ],
+      "totalCount": 62,
+      "page": 1,
+      "pageSize": 250,
+      "timestamp": "2025-07-27T16:33:13.960Z"
+    },
+    {
+      "endpoint": "/api/cards/set/swsh1",
+      "testCase": "swsh1",
+      "status": "success",
+      "responseTime": 300,
+      "retries": 0,
+      "cardCount": 216,
+      "cardNames": [
+        "Celebi V",
+        "Roselia",
+        "Roselia"
+      ],
+      "totalCount": 216,
+      "page": 1,
+      "pageSize": 250,
+      "timestamp": "2025-07-27T16:33:14.260Z"
+    },
+    {
+      "endpoint": "/api/cards/set/sv1",
+      "testCase": "sv1",
+      "status": "success",
+      "responseTime": 237,
+      "retries": 0,
+      "cardCount": 250,
+      "cardNames": [
+        "Pineco",
+        "Heracross",
+        "Shroomish"
+      ],
+      "totalCount": 258,
+      "page": 1,
+      "pageSize": 250,
+      "timestamp": "2025-07-27T16:33:14.497Z"
+    },
+    {
+      "endpoint": "/api/cards/set/g1",
+      "testCase": "g1",
+      "status": "success",
+      "responseTime": 242,
+      "retries": 0,
+      "cardCount": 117,
+      "cardNames": [
+        "Venusaur-EX",
+        "M Venusaur-EX",
+        "Caterpie"
+      ],
+      "totalCount": 117,
+      "page": 1,
+      "pageSize": 250,
+      "timestamp": "2025-07-27T16:33:14.740Z"
+    },
+    {
+      "endpoint": "/api/cards/set/ex1",
+      "testCase": "ex1",
+      "status": "success",
+      "responseTime": 204,
+      "retries": 0,
+      "cardCount": 109,
+      "cardNames": [
+        "Aggron",
+        "Beautifly",
+        "Blaziken"
+      ],
+      "totalCount": 109,
+      "page": 1,
+      "pageSize": 250,
+      "timestamp": "2025-07-27T16:33:14.944Z"
+    },
+    {
+      "endpoint": "/api/cards/set/xy1",
+      "testCase": "xy1",
+      "status": "success",
+      "responseTime": 220,
+      "retries": 0,
+      "cardCount": 146,
+      "cardNames": [
+        "Venusaur-EX",
+        "M Venusaur-EX",
+        "Weedle"
+      ],
+      "totalCount": 146,
+      "page": 1,
+      "pageSize": 250,
+      "timestamp": "2025-07-27T16:33:15.164Z"
+    },
+    {
+      "endpoint": "/api/cards/set/sm1",
+      "testCase": "sm1",
+      "status": "success",
+      "responseTime": 229,
+      "retries": 0,
+      "cardCount": 173,
+      "cardNames": [
+        "Caterpie",
+        "Metapod",
+        "Butterfree"
+      ],
+      "totalCount": 173,
+      "page": 1,
+      "pageSize": 250,
+      "timestamp": "2025-07-27T16:33:15.394Z"
+    },
+    {
+      "endpoint": "/api/cards/set/celebrations",
+      "testCase": "celebrations",
+      "status": "success",
+      "responseTime": 181,
+      "retries": 0,
+      "cardCount": 0,
+      "cardNames": [],
+      "totalCount": 0,
+      "page": 1,
+      "pageSize": 250,
+      "timestamp": "2025-07-27T16:33:15.575Z"
+    },
+    {
+      "endpoint": "/api/sets",
+      "testCase": "sets",
+      "status": "success",
+      "responseTime": 1288,
+      "retries": 0,
+      "cardCount": 168,
+      "cardNames": [
+        "White Flare",
+        "Black Bolt",
+        "Destined Rivals"
+      ],
+      "totalCount": 168,
+      "page": 1,
+      "pageSize": 250,
+      "timestamp": "2025-07-27T16:33:16.863Z"
+    },
+    {
+      "endpoint": "/api/sets",
+      "testCase": "sets",
+      "status": "success",
+      "responseTime": 205,
+      "retries": 0,
+      "cardCount": 10,
+      "cardNames": [
+        "Black Bolt",
+        "White Flare",
+        "Destined Rivals"
+      ],
+      "totalCount": 168,
+      "page": 1,
+      "pageSize": 10,
+      "timestamp": "2025-07-27T16:33:17.068Z"
+    },
+    {
+      "endpoint": "/api/sets",
+      "testCase": "sets",
+      "status": "success",
+      "responseTime": 196,
+      "retries": 0,
+      "cardCount": 20,
+      "cardNames": [
+        "Silver Tempest Trainer Gallery",
+        "Silver Tempest",
+        "Lost Origin Trainer Gallery"
+      ],
+      "totalCount": 168,
+      "page": 2,
+      "pageSize": 20,
+      "timestamp": "2025-07-27T16:33:17.264Z"
+    },
+    {
+      "endpoint": "/api/sets",
+      "testCase": "sets",
+      "status": "success",
+      "responseTime": 194,
+      "retries": 0,
+      "cardCount": 1,
+      "cardNames": [
+        "Black Bolt"
+      ],
+      "totalCount": 168,
+      "page": 1,
+      "pageSize": 1,
+      "timestamp": "2025-07-27T16:33:17.459Z"
+    },
+    {
+      "endpoint": "/api/sets",
+      "testCase": "sets",
+      "status": "success",
+      "responseTime": 349,
+      "retries": 0,
+      "cardCount": 0,
+      "cardNames": [],
+      "totalCount": 168,
+      "page": 999,
+      "pageSize": 10,
+      "timestamp": "2025-07-27T16:33:17.808Z"
+    },
+    {
+      "endpoint": "/api/sets",
+      "testCase": "sets",
+      "status": "success",
+      "responseTime": 228,
+      "retries": 0,
+      "cardCount": 168,
+      "cardNames": [
+        "White Flare",
+        "Black Bolt",
+        "Destined Rivals"
+      ],
+      "totalCount": 168,
+      "page": 1,
+      "pageSize": 250,
+      "timestamp": "2025-07-27T16:33:18.036Z"
+    },
+    {
+      "endpoint": "/api/pokemon/species",
+      "testCase": "species",
+      "status": "success",
+      "responseTime": 152,
+      "retries": 0,
+      "timestamp": "2025-07-27T16:33:18.190Z"
+    },
+    {
+      "endpoint": "/api/pokemon/species",
+      "testCase": "species",
+      "status": "success",
+      "responseTime": 32,
+      "retries": 0,
+      "timestamp": "2025-07-27T16:33:18.222Z"
+    },
+    {
+      "endpoint": "/api/pokemon/species",
+      "testCase": "species",
+      "status": "success",
+      "responseTime": 33,
+      "retries": 0,
+      "timestamp": "2025-07-27T16:33:18.255Z"
+    },
+    {
+      "endpoint": "/api/pokemon/species",
+      "testCase": "species",
+      "status": "success",
+      "responseTime": 28,
+      "retries": 0,
+      "timestamp": "2025-07-27T16:33:18.283Z"
+    },
+    {
+      "endpoint": "/api/pokemon/species",
+      "testCase": "species",
+      "status": "success",
+      "responseTime": 36,
+      "retries": 0,
+      "timestamp": "2025-07-27T16:33:18.319Z"
+    },
+    {
+      "endpoint": "/api/pokemon/species",
+      "testCase": "species",
+      "status": "success",
+      "responseTime": 34,
+      "retries": 0,
+      "timestamp": "2025-07-27T16:33:18.353Z"
+    },
+    {
+      "endpoint": "/api/pokemon/species",
+      "testCase": "species",
+      "status": "success",
+      "responseTime": 26,
+      "retries": 0,
+      "timestamp": "2025-07-27T16:33:18.379Z"
+    },
+    {
+      "endpoint": "/api/pokemon/species",
+      "testCase": "species",
+      "status": "success",
+      "responseTime": 32,
+      "retries": 0,
+      "timestamp": "2025-07-27T16:33:18.411Z"
+    }
+  ]
+}
