@@ -4,6 +4,7 @@ import axios from 'axios';
 import { CollectionPageProps, Card, Pokemon } from '../types';
 import FilterPanel, { FilterState } from './FilterPanel';
 import CardActionButtons from './CardActionButtons';
+import CardImageModal from './CardImageModal';
 
 // Image cache hook
 function useImageCache(urls: string[]) {
@@ -28,6 +29,7 @@ function CollectionPage({ collection, onRemove, onToggleFavorite, onToggleWishli
   });
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [pokemonList, setPokemonList] = useState<Pokemon[]>([]);
+  const [modalCard, setModalCard] = useState<Card | null>(null);
 
   // Fetch Pokémon species data for filtering
   useEffect(() => {
@@ -233,7 +235,8 @@ function CollectionPage({ collection, onRemove, onToggleFavorite, onToggleWishli
                   <img 
                     src={card.images.small} 
                     alt={card.name} 
-                    className="w-full h-auto"
+                    className="w-full h-auto cursor-pointer hover:opacity-90 transition-opacity duration-200"
+                    onClick={() => setModalCard(card)}
                   />
                   <div className="p-3">
                     <div className="text-sm text-gray-600 dark:text-gray-400 mb-2 truncate">
@@ -255,6 +258,14 @@ function CollectionPage({ collection, onRemove, onToggleFavorite, onToggleWishli
               ))}
             </div>
           )}
+          
+          {/* Card Image Modal */}
+          <CardImageModal
+            isOpen={!!modalCard}
+            onClose={() => setModalCard(null)}
+            imageUrl={modalCard?.images?.small || ''}
+            cardName={modalCard?.name || ''}
+          />
         </div>
       </div>
     </div>

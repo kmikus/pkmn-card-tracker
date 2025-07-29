@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Pokemon, Card } from '../types';
 import CardActionButtons from './CardActionButtons';
+import CardImageModal from './CardImageModal';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
 
@@ -30,6 +31,7 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }: {
   const [error, setError] = useState<string | null>(null);
   const [processingCards, setProcessingCards] = useState(new Set<string>());
   const [searchTerm, setSearchTerm] = useState('');
+  const [modalCard, setModalCard] = useState<Card | null>(null);
 
   useEffect(() => {
     if (!pokemon) return;
@@ -224,7 +226,8 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }: {
                 <img 
                   src={card.images.small} 
                   alt={card.name} 
-                  className="w-full h-auto flex-shrink-0"
+                  className="w-full h-auto flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity duration-200"
+                  onClick={() => setModalCard(card)}
                 />
                 <div className="p-3 flex flex-col flex-grow min-h-0">
                   <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-2 flex-shrink-0 line-clamp-2">
@@ -248,6 +251,14 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }: {
             );
           })}
         </div>
+        
+        {/* Card Image Modal */}
+        <CardImageModal
+          isOpen={!!modalCard}
+          onClose={() => setModalCard(null)}
+          imageUrl={modalCard?.images?.small || ''}
+          cardName={modalCard?.name || ''}
+        />
       </div>
       </div>
     </div>

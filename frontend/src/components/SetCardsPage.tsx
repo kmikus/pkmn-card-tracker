@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Card, CardSet } from '../types';
 import CardActionButtons from './CardActionButtons';
+import CardImageModal from './CardImageModal';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
 
@@ -30,6 +31,7 @@ function SetCardsPage({ set, onBack, onAdd, onRemove, collection }: {
   const [processingCards, setProcessingCards] = useState(new Set<string>());
   const [tagProcessing, setTagProcessing] = useState(new Set<string>());
   const [searchTerm, setSearchTerm] = useState('');
+  const [modalCard, setModalCard] = useState<Card | null>(null);
 
   useEffect(() => {
     if (!set) return;
@@ -241,7 +243,8 @@ function SetCardsPage({ set, onBack, onAdd, onRemove, collection }: {
                       <img 
                         src={card.images.small} 
                         alt={card.name} 
-                        className="w-full h-auto"
+                        className="w-full h-auto cursor-pointer hover:opacity-90 transition-opacity duration-200"
+                        onClick={() => setModalCard(card)}
                       />
                       <div className="p-4 flex flex-col flex-grow">
                         <div className="text-sm text-gray-600 dark:text-gray-400 mb-3 flex-shrink-0">
@@ -268,6 +271,14 @@ function SetCardsPage({ set, onBack, onAdd, onRemove, collection }: {
             )}
           </>
         )}
+        
+        {/* Card Image Modal */}
+        <CardImageModal
+          isOpen={!!modalCard}
+          onClose={() => setModalCard(null)}
+          imageUrl={modalCard?.images?.small || ''}
+          cardName={modalCard?.name || ''}
+        />
       </div>
       </div>
     </div>
