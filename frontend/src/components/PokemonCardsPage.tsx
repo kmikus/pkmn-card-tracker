@@ -182,6 +182,7 @@ function PokemonCardsPage({ pokemon, onBack, onAdd, onRemove, collection }: {
               placeholder="Search by set name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={(e) => e.target.select()}
               className="pl-10 pr-4 py-3 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none transition-colors duration-200 w-full placeholder-gray-500 dark:placeholder-gray-400"
             />
             <svg 

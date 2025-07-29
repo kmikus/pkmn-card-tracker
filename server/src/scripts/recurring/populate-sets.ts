@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../generated/prisma';
+import { PrismaClient } from '../../../generated/prisma';
 import axios from 'axios';
 
 const prisma = new PrismaClient();
@@ -88,7 +88,7 @@ async function populateSets() {
     });
     
     console.log('\n📋 Sample sets (newest first):');
-    sampleSets.forEach(set => {
+    sampleSets.forEach((set: any) => {
       console.log(`  - ${set.name} (${set.id}): ${set.releaseDate} - ${set.total} cards`);
     });
     
