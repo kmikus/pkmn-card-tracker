@@ -1,5 +1,30 @@
 # Changelog
 
+## [v0.10.0] - GitHub data migration and search UX improvements
+### Added
+- Migrated from TCG API to GitHub JSON data source for improved reliability
+- Implemented in-memory ZIP processing for efficient data synchronization
+- Added change detection using ETags to avoid unnecessary data processing
+- Memory monitoring in data synchronization scripts
+- Auto-select functionality for all search input boxes across the application
+- Consolidated card and set population into single efficient script
+
+### Changed
+- Updated all backend API endpoints to use GitHub data instead of TCG API
+- Fixed API sorting to properly handle release dates and card numbers
+- Resolved UI compatibility issues with new data structure
+- Updated Prisma import paths in scripts for proper module resolution
+- Enhanced search experience with automatic text selection on focus
+
+### Technical
+- Created robust data synchronization script with error handling and retry logic
+- Implemented custom sync_metadata table for change detection
+- Fixed TypeScript compilation errors in populate scripts
+- Updated database schema to properly handle GitHub data structure
+- Added proper set object construction in API responses for frontend compatibility
+
+---
+
 ## [v0.9.0] - Database restructuring and localStorage optimization
 ### Added
 - Complete database restructuring with new `cards` and `user_collection` tables
